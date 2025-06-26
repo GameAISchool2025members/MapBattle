@@ -1,4 +1,12 @@
+from enum import Enum
+
 import pygame
+class GameState(Enum):
+    MENU = 1
+    PRE_PHASE = 2
+    BATTLE_PHASE = 3
+    END_PHASE = 4
+    QUIT = 5
 
 # pygame setup
 pygame.init()
