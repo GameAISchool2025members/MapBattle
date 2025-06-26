@@ -1,7 +1,11 @@
 import pygame
+
+import battle_phase
+import end_phase
 import menu
 import game_state_manager
 import game_init
+import pre_phase
 
 # pygame setup
 pygame.init()
@@ -31,11 +35,11 @@ while running:
         case game_state_manager.GameState.MENU:
             menu.display_menu(dt)
         case game_state_manager.GameState.PRE_PHASE:
-            print()
+            pre_phase.run(init_data)
         case game_state_manager.GameState.BATTLE_PHASE:
-            print()
+            battle_phase.run()
         case game_state_manager.GameState.END_PHASE:
-            print()
+            end_phase.run()
         case game_state_manager.GameState.QUIT:
             running = False
 
