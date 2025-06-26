@@ -4,8 +4,8 @@ from enum import Enum
 
 class ActionType(Enum):
     NoneOP = 0,
-    Melee = 1,
-    Range = 2
+    Move = 1,
+    Attack = 2
 
 @dataclass
 class UnitStat:
