@@ -25,6 +25,8 @@ class Grid:
     Height: int
     Cells: List[List[int]]
 
+    # Position [0, 0] is BOTTOM LEFT
+
 @dataclass
 class ActionResult:
     IDOfUnitAffected: int
