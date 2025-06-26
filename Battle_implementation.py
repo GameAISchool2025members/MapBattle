@@ -1,18 +1,8 @@
-from data_structs import UnitStat, Grid, ResultOfBattle, Action, ActionType, ActionResult
-from typing import List, Tuple
+from data_structs import UnitStat, Grid, ResultOfBattle, Action, ActionType, ActionResult, Owner
+from typing import List, Tuple, assert_never
 import math as math
 import copy as copy
 
-def Internal_Battle( 
-        UnitsForAgentA: List[UnitStat],
-        UnitsForAgentB: List[UnitStat],
-        MapGrid: Grid
-    ) -> ResultOfBattle:
-    
-
-
-    
-    return None
 
 def ManhattanDistanceBetweenPoints(
         PosA: Tuple[int, int],
@@ -44,83 +34,82 @@ def FindUnitIndexByPos(
     return -1
 
 def ApplyMoveAction(
-        AllUnits: List[UnitStat],
+        UnitTakingAction: UnitStat,
+        EnemyUnits: List[UnitStat],
         MapGrid: Grid,
         ActionToApply: Action
     ) -> Tuple[List[UnitStat], Grid, Action]:
 
-    AllUnitsCopy = copy.deepcopy(AllUnits)
     MapGridCopy = copy.deepcopy(MapGrid)
     ActionToReturn = copy.deepcopy(ActionToApply)
 
-    index = FindUnitIndexByID(AllUnitsCopy, ActionToApply.IDOfUnitTakingAction)
-
-    assert(index != -1)
-
     NewPos = ActionToReturn.GridIndexPosition
-    OldPos = AllUnitsCopy[index].CurrentPosition
+    OldPos = UnitTakingAction.CurrentPosition
+
     assert(MapGridCopy.Cells[NewPos[1]][NewPos[0]] == 0)
     MapGridCopy.Cells[NewPos[1]][NewPos[0]] = 1
     MapGridCopy.Cells[OldPos[1]][OldPos[0]] = 0
-    AllUnitsCopy[index].CurrentPosition = NewPos
 
-    return tuple([AllUnitsCopy, MapGridCopy, ActionToReturn])
+    UnitTakingAction.CurrentPosition = NewPos
+
+    return tuple([EnemyUnits, MapGridCopy, ActionToReturn])
 
 def ApplyAttackAction(
-        AllUnits: List[UnitStat],
+        UnitTakingAction: UnitStat,
+        EnemyUnits: List[UnitStat],
         MapGrid: Grid,
         ActionToApply: Action
     ) -> Tuple[List[UnitStat], Grid, Action]:
 
-    AllUnitsCopy = copy.deepcopy(AllUnits)
+    EnemyUnitsCopy = copy.deepcopy(EnemyUnits)
     MapGridCopy = copy.deepcopy(MapGrid)
     ActionToReturn = copy.deepcopy(ActionToApply)
 
-    index = FindUnitIndexByID(AllUnitsCopy, ActionToApply.IDOfUnitTakingAction)
-    assert(index != -1)
-    enemyIndex = FindUnitIndexByPos(AllUnitsCopy, ActionToApply.GridIndexPosition)
+    enemyIndex = FindUnitIndexByPos(EnemyUnitsCopy, ActionToApply.GridIndexPosition)
     assert(enemyIndex != -1)
     
-    ActionToReturn.ResultOfAction = ActionResult(enemyIndex, AllUnitsCopy[index].Damage, False)
+    ActionToReturn.ResultOfAction = ActionResult(enemyIndex, UnitTakingAction.Damage, False)
 
-    CurrentHealth = AllUnitsCopy[enemyIndex].CurrentHealth
-    CurrentHealth = max(0, CurrentHealth - AllUnitsCopy[index].Damage)
+    CurrentHealth = EnemyUnitsCopy[enemyIndex].CurrentHealth
+    CurrentHealth = max(0, CurrentHealth - UnitTakingAction.Damage)
 
     if CurrentHealth == 0:
         ActionToReturn.ResultOfAction.Dead = True
-        EnemyPos = AllUnitsCopy[enemyIndex].CurrentPosition
+        EnemyPos = EnemyUnitsCopy[enemyIndex].CurrentPosition
         MapGridCopy.Cells[EnemyPos[1]][EnemyPos[0]] = 0
-        AllUnitsCopy.remove(AllUnitsCopy[enemyIndex])
+        EnemyUnitsCopy.remove(EnemyUnitsCopy[enemyIndex])
     else:
-        AllUnitsCopy[enemyIndex].CurrentHealth = CurrentHealth
+        EnemyUnitsCopy[enemyIndex].CurrentHealth = CurrentHealth
     
-    return tuple([AllUnitsCopy, MapGridCopy, ActionToReturn])
+    return tuple([EnemyUnitsCopy, MapGridCopy, ActionToReturn])
 
 def ApplyAction(
-        AllUnits: List[UnitStat],
+        UnitTakingAction: UnitStat,
+        EnemyUnits: List[UnitStat],
         MapGrid: Grid,
         ActionToApply: Action
     ) -> Tuple[List[UnitStat], Grid, Action]:
 
     if ActionToApply.Type == ActionToApply.Type.Move:
         return ApplyMoveAction(
-            AllUnits,
+            UnitTakingAction,
+            EnemyUnits,
             MapGrid,
             ActionToApply
         )
+    
     elif ActionToApply.Type == ActionToApply.Type.Attack:
         return ApplyAttackAction(
-            AllUnits,
+            UnitTakingAction,
+            EnemyUnits,
             MapGrid,
             ActionToApply
         )
 
 
-    return tuple([AllUnits, MapGrid, ActionToApply])
+    return tuple([EnemyUnits, MapGrid, ActionToApply])
 
-
-
-def DecideOnAction(
+def DecideAction(
         UnitTakingAction: UnitStat,
         EnemyUnits: List[UnitStat],
         MapGrid: Grid
@@ -128,7 +117,7 @@ def DecideOnAction(
     
 
 
-    return None
+    assert_never(UnitTakingAction)
 
 
 def PrintGrid(MapGrid: Grid):
@@ -139,13 +128,54 @@ def PrintUnits(AllUnits: List[UnitStat]):
     for Unit in AllUnits:
         print(Unit)
 
+
+def Internal_Battle( 
+        UnitsForAgentA: List[UnitStat],
+        UnitsForAgentB: List[UnitStat],
+        MapGrid: Grid
+    ) -> ResultOfBattle:
+    
+    UnitsForACopy = copy.deepcopy(UnitsForAgentA)
+    UnitsForBCopy = copy.deepcopy(UnitsForAgentB)
+    MapCopy = copy.deepcopy(MapGrid)
+    AllUnits = copy.deepcopy(UnitsForACopy)
+    AllUnits.extend(copy.deepcopy(UnitsForBCopy))
+
+    ToReturn = ResultOfBattle([], Owner.NoOwner)
+
+    def UnitSort(UnitA: UnitStat) -> int:
+        return UnitA.TurnOrderSpeed
+ 
+    AllUnits.sort(key=UnitSort, reverse=True)
+
+    for Unit in AllUnits:
+        if Unit.OwningAgent == Owner.AgentA:
+            EnemyList = UnitsForBCopy
+        else:
+            EnemyList = UnitsForACopy
+
+        ActionToTake = DecideAction(Unit, EnemyList, MapCopy)
+        Result = ApplyAction(Unit, EnemyList, MapCopy, ActionToTake)
+        
+        if Unit.OwningAgent == Owner.AgentA:
+            UnitsForBCopy = Result[0]
+        else:
+            UnitsForACopy = Result[0]
+
+        MapCopy = Result[1]
+        ToReturn.ActionsTaken.append(Result[2])
+
+    return None
+
+
+
 if __name__ == "__main__":
     print("Starting Battle_implementation.py")
 
 
     MockGrid = Grid(5, 5, [
         [
-            0, 0, 0, 0, 0
+            0, 1, 1, 0, 0
         ],
         [
             0, 0, 0, 0, 0
@@ -161,32 +191,25 @@ if __name__ == "__main__":
         ]
     ])
 
-    MockUnits = list(
+    MockUnitsA = list(
         [
-            UnitStat(2, 3, 5, 10, 10, 0, 10, [1, 4]),
-            UnitStat(2, 3, 5, 10, 10, 1, 10, [2, 4])
+            UnitStat(2, 5, 5, 10, 10, 0, 10, [1, 4], Owner.AgentA),
+            UnitStat(2, 1, 5, 10, 10, 1, 10, [2, 4], Owner.AgentA)
         ]
     )
 
-    ActionToTake = Action(
-        0,
-        ActionType.Attack,
-        [2, 4],
-        None
+    MockUnitsB = list(
+        [
+            UnitStat(2, 5, 5, 10, 10, 2, 10, [1, 0], Owner.AgentB),
+            UnitStat(2, 3, 5, 10, 10, 3, 10, [2, 0], Owner.AgentB)
+        ]
     )
+    
+    results = Internal_Battle(MockUnitsA, MockUnitsB, MockGrid)
 
-    PrintUnits(MockUnits)
-    PrintGrid(MockGrid)
-
-    ResultAction = ApplyAttackAction(
-        MockUnits,
-        MockGrid,
-        ActionToTake
-    )
-
+    PrintUnits(MockUnitsA)
     print()
-    PrintUnits(ResultAction[0])
-    PrintGrid(ResultAction[1])
+    PrintUnits(MockUnitsB)
     
 
 
