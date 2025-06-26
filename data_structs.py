@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from time import time
 from typing import List, Tuple
 from enum import Enum
 
@@ -25,6 +26,35 @@ class UnitStat:
     CurrentHealth: int
     CurrentPosition: Tuple[int, int]
     OwningAgent: Owner
+    def from_genome(genome: List[int], owning_agent: Owner) -> 'UnitStat':
+        return UnitStat(
+            Range=genome[0],
+            TurnOrderSpeed=genome[1],
+            MoveRange=genome[2],
+            Damage=genome[3],
+            MaxHealth=genome[4],
+            UnitID=int(time()),  # Using current time as a unique ID
+            CurrentHealth=genome[4],
+            CurrentPosition=(genome[5], genome[6]),
+            OwningAgent=owning_agent
+        )
+    
+@dataclass
+class StatRanges:
+    Range: Tuple[int, int] = (1, 5)
+    TurnOrderSpeed: Tuple[int, int] = (1, 5)
+    MoveRange: Tuple[int, int] = (1, 5)
+    Damage: Tuple[int, int] = (1, 5)
+    MaxHealth: Tuple[int, int] = (1, 15)
+    PositionX: Tuple[int, int] = (0, 10)
+    PositionY: Tuple[int, int] = (0, 10)
+    def get_mins(self) -> List[int]:
+        return [self.Range[0], self.TurnOrderSpeed[0], self.MoveRange[0], self.Damage[0], self.MaxHealth[0], self.PositionX[0], self.PositionY[0]]
+    def get_maxs(self) -> List[int]:
+        return [self.Range[1], self.TurnOrderSpeed[1], self.MoveRange[1], self.Damage[1], self.MaxHealth[1], self.PositionX[1], self.PositionY[1]]
+    def get_ranges(self) -> List[Tuple[int, int]]:
+        return [self.Range, self.TurnOrderSpeed, self.MoveRange, self.Damage, self.MaxHealth, self.PositionX, self.PositionY]
+
 
 @dataclass
 class Grid:
