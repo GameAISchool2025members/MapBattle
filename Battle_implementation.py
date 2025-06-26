@@ -58,11 +58,11 @@ def ApplyMoveAction(
     assert(index != -1)
 
     NewPos = ActionToReturn.GridIndexPosition
-    OldPos = AllUnitsCopy[i].CurrentPosition
+    OldPos = AllUnitsCopy[index].CurrentPosition
     assert(MapGridCopy.Cells[NewPos[1]][NewPos[0]] == 0)
     MapGridCopy.Cells[NewPos[1]][NewPos[0]] = 1
     MapGridCopy.Cells[OldPos[1]][OldPos[0]] = 0
-    AllUnitsCopy[i].CurrentPosition = NewPos
+    AllUnitsCopy[index].CurrentPosition = NewPos
 
     return tuple([AllUnitsCopy, MapGridCopy, ActionToReturn])
 
