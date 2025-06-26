@@ -1,21 +1,17 @@
-from enum import Enum
-
 import pygame
-class GameState(Enum):
-    MENU = 1
-    PRE_PHASE = 2
-    BATTLE_PHASE = 3
-    END_PHASE = 4
-    QUIT = 5
+import menu
+import game_state_manager
 
 # pygame setup
 pygame.init()
-screen = pygame.display.set_mode((1280, 720))
+pygame.display.set_caption("Map Battle")
 clock = pygame.time.Clock()
 running = True
 dt = 0
 
-player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
+gameStateManager = game_state_manager.GameStateManager()
+menu = menu.Menu()
+menu.__init__()
 
 while running:
     # poll for events
@@ -24,23 +20,17 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # fill the screen with a color to wipe away anything from last frame
-    screen.fill("green")
-
-    pygame.draw.rect(screen, "red", pygame.Rect(player_pos.x, player_pos.y, 40, 40))
-
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_w]:
-        player_pos.y -= 300 * dt
-    if keys[pygame.K_s]:
-        player_pos.y += 300 * dt
-    if keys[pygame.K_a]:
-        player_pos.x -= 300 * dt
-    if keys[pygame.K_d]:
-        player_pos.x += 300 * dt
-
-    # flip() the display to put your work on screen
-    pygame.display.flip()
+    match gameStateManager.get_state():
+        case game_state_manager.GameState.MENU:
+            menu.display_menu(dt)
+        case game_state_manager.GameState.PRE_PHASE:
+            print()
+        case game_state_manager.GameState.BATTLE_PHASE:
+            print()
+        case game_state_manager.GameState.END_PHASE:
+            print()
+        case game_state_manager.GameState.QUIT:
+            running = False
 
     # limits FPS to 60
     # dt is delta time in seconds since last frame, used for framerate-
