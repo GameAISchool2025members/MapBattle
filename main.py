@@ -41,11 +41,11 @@ while running:
         case game_state_manager.GameState.MENU:
             menu.display_menu()
         case game_state_manager.GameState.PRE_PHASE:
-            pre_phase.run(init_data, run_counter)
+            pre_phase.run(gameStateManager, init_data, run_counter)
         case game_state_manager.GameState.BATTLE_PHASE:
-            battle_phase.run()
+            battle_phase.run(gameStateManager, init_data)
         case game_state_manager.GameState.END_PHASE:
-            end_phase.run()
+            end_phase.run(gameStateManager)
         case game_state_manager.GameState.QUIT:
             running = False
 

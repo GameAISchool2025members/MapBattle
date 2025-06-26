@@ -1,9 +1,8 @@
-import battle
-
 import evolution
 import game_init
 import game_state_manager
-def run(init_data: game_init.BattleState, run_counter: int):
+
+def run(gameStateManager: game_state_manager, init_data: game_init.BattleState, run_counter: int):
     if run_counter:
         evolution.RunEvolution(init_data.UnitsAgentA,
                                init_data.UnitsAgentB,
@@ -13,4 +12,4 @@ def run(init_data: game_init.BattleState, run_counter: int):
                                5,
                                0
                                )
-    game_state_manager.set
+    gameStateManager.set_state(game_state_manager.GameState.BATTLE_PHASE)
