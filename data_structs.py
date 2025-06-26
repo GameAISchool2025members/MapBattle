@@ -8,8 +8,9 @@ class ActionType(Enum):
     Attack = 2
 
 class Owner(Enum):
-    AgentA = 0,
-    AgentB = 1,
+    NoOwner = 0,
+    AgentA = 1,
+    AgentB = 2,
 
 
 @dataclass
@@ -50,4 +51,4 @@ class Action:
 @dataclass
 class ResultOfBattle:
     ActionsTaken: List[Action]
-    Winner: int
+    Winner: Owner
