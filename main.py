@@ -1,14 +1,4 @@
-from enum import Enum
-
 import pygame
-
-class GameState(Enum):
-    MENU = 1
-    GAME_INIT = 2  # Scene initialization as a state
-    PRE_PHASE = 3
-    BATTLE_PHASE = 4
-    END_PHASE = 5
-    QUIT = 6
 
 # pygame setup
 pygame.init()
@@ -27,7 +17,19 @@ while running:
             running = False
 
     # fill the screen with a color to wipe away anything from last frame
-    # screen.fill("purple")
+    screen.fill("purple")
+
+    pygame.draw.circle(screen, "red", player_pos, 40)
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_w]:
+        player_pos.y -= 300 * dt
+    if keys[pygame.K_s]:
+        player_pos.y += 300 * dt
+    if keys[pygame.K_a]:
+        player_pos.x -= 300 * dt
+    if keys[pygame.K_d]:
+        player_pos.x += 300 * dt
 
     # flip() the display to put your work on screen
     pygame.display.flip()
