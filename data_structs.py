@@ -7,6 +7,11 @@ class ActionType(Enum):
     Move = 1,
     Attack = 2
 
+class Owner(Enum):
+    AgentA = 0,
+    AgentB = 1,
+
+
 @dataclass
 class UnitStat:
     Range: int
@@ -18,6 +23,7 @@ class UnitStat:
     UnitID: int
     CurrentHealth: int
     CurrentPosition: Tuple[int, int]
+    OwningAgent: Owner
 
 @dataclass
 class Grid:
