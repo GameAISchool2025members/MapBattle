@@ -1,7 +1,17 @@
+from dataclasses import dataclass
 from data_structs import UnitStat, Grid, Owner
-from typing import List, Dict, Any
-from starting_positions import get_agent_starting_positions
+from typing import List
+from starting_positions import get_agent_random_starting_positions
 import random
+
+@dataclass
+class BattleState:
+    UnitsAgentA: List[UnitStat]
+    UnitsAgentB: List[UnitStat]
+    GameGrid: Grid
+    BoardWidth: int
+    BoardHeight: int
+
 
 def create_random_units(num_units: int, owner: Owner, start_positions: List[tuple], id_offset: int = 0) -> List[UnitStat]:
     """Create random units for an agent"""
@@ -24,12 +34,12 @@ def create_random_units(num_units: int, owner: Owner, start_positions: List[tupl
 
     return units
 
-def game_init() -> Dict[str, Any]:
+def setup_battle(in_board_width: int, in_board_height, in_num_units_per_agent) -> BattleState:
     """Initialize the game state and return all necessary data"""
 
     # Set board size
-    board_width = 12
-    board_height = 10
+    board_width = in_board_width
+    board_height = in_board_height
 
     # Initialize the grid (0 = empty, 1 = occupied)
     cells = [[0 for _ in range(board_width)] for _ in range(board_height)]
@@ -42,8 +52,8 @@ def game_init() -> Dict[str, Any]:
     )
 
     # Get starting positions from positioning module
-    num_units_per_agent = 4
-    agent_a_positions, agent_b_positions = get_agent_starting_positions(
+    num_units_per_agent = in_num_units_per_agent
+    agent_a_positions, agent_b_positions = get_agent_random_starting_positions(
         board_width,
         board_height,
         num_units_per_agent
@@ -69,42 +79,10 @@ def game_init() -> Dict[str, Any]:
         game_grid.Cells[y][x] = 1  # Mark as occupied
 
     # Return all game initialization data
-    return {
-        'units_agent_a': units_agent_a,
-        'units_agent_b': units_agent_b,
-        'game_grid': game_grid,
-        'board_width': board_width,
-        'board_height': board_height
-    }
-
-# Test function to see the initialized units
-def print_game_state(game_data: Dict[str, Any]):
-    """Helper function to print the game state for debugging"""
-    print("=== AGENT A UNITS (Bottom) ===")
-    for unit in game_data['units_agent_a']:
-        print(f"ID: {unit.UnitID}, Health: {unit.CurrentHealth}/{unit.MaxHealth}, "
-              f"Pos: {unit.CurrentPosition}, Owner: {unit.OwningAgent}")
-
-    print("\n=== AGENT B UNITS (Top) ===")
-    for unit in game_data['units_agent_b']:
-        print(f"ID: {unit.UnitID}, Health: {unit.CurrentHealth}/{unit.MaxHealth}, "
-              f"Pos: {unit.CurrentPosition}, Owner: {unit.OwningAgent}")
-
-    print(f"\n=== GRID ({game_data['board_width']}x{game_data['board_height']}) ===")
-    # Print grid with Y-axis flipped (since [0,0] is bottom-left)
-    for y in range(game_data['board_height']-1, -1, -1):
-        row_display = []
-        for x in range(game_data['board_width']):
-            if game_data['game_grid'].Cells[y][x] == 1:
-                # Check which agent owns this position
-                is_agent_a = any(unit.CurrentPosition == (x, y) for unit in game_data['units_agent_a'])
-                row_display.append('A' if is_agent_a else 'B')
-            else:
-                row_display.append('.')
-        print(''.join(row_display) + f" <- y={y}")
-
-# Test the initialization if run directly
-if __name__ == "__main__":
-    print("Testing game initialization...")
-    test_data = game_init()
-    print_game_state(test_data)
+    return BattleState(
+        UnitsAgentA=units_agent_a,
+        UnitsAgentB=units_agent_b,
+        GameGrid=game_grid,
+        BoardWidth=board_width,
+        BoardHeight=board_height
+    )

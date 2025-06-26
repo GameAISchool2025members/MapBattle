@@ -1,6 +1,7 @@
 import pygame
 import menu
 import game_state_manager
+import game_init
 
 # pygame setup
 pygame.init()
@@ -12,6 +13,12 @@ dt = 0
 gameStateManager = game_state_manager.GameStateManager()
 menu = menu.Menu()
 menu.__init__()
+
+init_data = game_init.setup_battle(8, 12, 3)
+
+first_run = True
+
+
 
 while running:
     # poll for events

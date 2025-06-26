@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-def get_agent_starting_positions(board_width: int, board_height: int, num_units: int) -> Tuple[List[Tuple[int, int]], List[Tuple[int, int]]]:
+def get_agent_random_starting_positions(board_width: int, board_height: int, num_units: int) -> Tuple[List[Tuple[int, int]], List[Tuple[int, int]]]:
     """
     Generate starting positions for both agents.
     Agent A starts at the bottom, Agent B starts at the top.
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     
     for width, height, units in test_configs:
         print(f"\n=== Board: {width}x{height}, Units: {units} ===")
-        pos_a, pos_b = get_agent_starting_positions(width, height, units)
+        pos_a, pos_b = get_agent_random_starting_positions(width, height, units)
         
         print("Agent A (bottom):", pos_a)
         print("Agent B (top):", pos_b)
