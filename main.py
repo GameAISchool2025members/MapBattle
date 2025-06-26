@@ -21,7 +21,7 @@ uiManager = pygame_gui.UIManager(resolution)
 menu = menu.Menu(screen)
 
 init_data = game_init.setup_battle(8, 12, 3)
-first_run = True
+run_counter: int = 0
 
 while running:
     # limits FPS to 60
@@ -41,7 +41,7 @@ while running:
         case game_state_manager.GameState.MENU:
             menu.display_menu()
         case game_state_manager.GameState.PRE_PHASE:
-            pre_phase.run(init_data, first_run)
+            pre_phase.run(init_data, run_counter)
         case game_state_manager.GameState.BATTLE_PHASE:
             battle_phase.run()
         case game_state_manager.GameState.END_PHASE:
