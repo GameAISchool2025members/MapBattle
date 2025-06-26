@@ -35,7 +35,7 @@ while running:
         case game_state_manager.GameState.MENU:
             menu.display_menu(dt)
         case game_state_manager.GameState.PRE_PHASE:
-            pre_phase.run(init_data)
+            pre_phase.run(init_data, first_run)
         case game_state_manager.GameState.BATTLE_PHASE:
             battle_phase.run()
         case game_state_manager.GameState.END_PHASE:
