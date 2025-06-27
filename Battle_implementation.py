@@ -252,7 +252,7 @@ def DecideAction(
             AllEnemyPositions,
             MapGridCopy,
             UnitTakingAction.MoveRange)
-        print(PositionToMoveTo)
+        #print(PositionToMoveTo)
         if len(PositionToMoveTo) == 0:
             ReturnAction.Type = ActionType.NoneOP
         ReturnAction.GridIndexPosition = PositionToMoveTo
