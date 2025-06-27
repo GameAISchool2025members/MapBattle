@@ -1,5 +1,5 @@
 from data_structs import UnitStat, Grid, ResultOfBattle, Action, ActionType, ActionResult, Owner
-from typing import List, Tuple, assert_never
+from typing import List, Tuple
 from collections import deque
 import math as math
 import copy as copy
