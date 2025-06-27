@@ -3,6 +3,7 @@ from typing import List, Tuple
 from collections import deque
 import math as math
 import copy as copy
+import time as time
 
 
 def ManhattanDistanceBetweenPoints(
@@ -41,11 +42,14 @@ def ApplyMoveAction(
         ActionToApply: Action
     ) -> Tuple[List[UnitStat], Grid, Action]:
 
-    MapGridCopy = copy.deepcopy(MapGrid)
-    ActionToReturn = copy.deepcopy(ActionToApply)
+    MapGridCopy = MapGrid
+    ActionToReturn = ActionToApply
 
     NewPos = ActionToReturn.GridIndexPosition
     OldPos = UnitTakingAction.CurrentPosition
+
+    if NewPos == OldPos:
+        return tuple([EnemyUnits, MapGridCopy, ActionToReturn])
 
     assert(MapGridCopy.Cells[NewPos[1]][NewPos[0]] == 0)
     MapGridCopy.Cells[NewPos[1]][NewPos[0]] = 2
@@ -62,9 +66,9 @@ def ApplyAttackAction(
         ActionToApply: Action
     ) -> Tuple[List[UnitStat], Grid, Action]:
 
-    EnemyUnitsCopy = copy.deepcopy(EnemyUnits)
-    MapGridCopy = copy.deepcopy(MapGrid)
-    ActionToReturn = copy.deepcopy(ActionToApply)
+    EnemyUnitsCopy = EnemyUnits
+    MapGridCopy = MapGrid
+    ActionToReturn = ActionToApply
 
     enemyIndex = FindUnitIndexByPos(EnemyUnitsCopy, ActionToApply.GridIndexPosition)
     assert(enemyIndex != -1)
@@ -266,7 +270,7 @@ def Internal_Battle(
         UnitsForAgentB: List[UnitStat],
         MapGrid: Grid
     ) -> ResultOfBattle:
-    
+
     UnitsForACopy = copy.deepcopy(UnitsForAgentA)
     UnitsForBCopy = copy.deepcopy(UnitsForAgentB)
     MapCopy = copy.deepcopy(MapGrid)
@@ -274,17 +278,17 @@ def Internal_Battle(
     AllUnits.extend(UnitsForACopy)
     AllUnits.extend(UnitsForBCopy)
 
-    print("Before Battle:")
-    PrintGrid(MapCopy)
-    PrintUnits(UnitsForACopy)
-    PrintUnits(UnitsForBCopy)
-    print()
+    #print("Before Battle:")
+    #PrintGrid(MapCopy)
+    #PrintUnits(UnitsForACopy)
+    #PrintUnits(UnitsForBCopy)
+    #print()
 
     ToReturn = ResultOfBattle([], Owner.NoOwner)
 
     def UnitSort(UnitA: UnitStat) -> int:
         return UnitA.TurnOrderSpeed
- 
+
     AllUnits.sort(key=UnitSort, reverse=True)
 
     while len(UnitsForACopy) != 0 and len(UnitsForBCopy) != 0:
@@ -303,6 +307,14 @@ def Internal_Battle(
                 EnemyList = UnitsForACopy
 
             ActionToTake = DecideAction(Unit, EnemyList, MapCopy)
+            #print(f"Unit {Unit.UnitID} is to take the {ActionToTake.Type} action, targeting position {ActionToTake.GridIndexPosition}")
+            #print()
+            #print("After Action Decide:")
+            #PrintGrid(MapCopy)
+            #PrintUnits(UnitsForACopy)
+            #PrintUnits(UnitsForBCopy)
+            #print()
+
             Result = ApplyAction(Unit, EnemyList, MapCopy, ActionToTake)
 
             if Result[2].Type == ActionType.Attack and Result[2].ResultOfAction.Dead == True:
@@ -324,13 +336,14 @@ def Internal_Battle(
             MapCopy = Result[1]
             ToReturn.ActionsTaken.append(Result[2])
 
-            print(f"Unit {Unit.UnitID} took the {Result[2].Type} action, targeting position {Result[2].GridIndexPosition}")
-            print()
-            print("After Action:")
-            PrintGrid(MapCopy)
-            PrintUnits(UnitsForACopy)
-            PrintUnits(UnitsForBCopy)
-            print()
+            #print(f"Unit {Unit.UnitID} took the {Result[2].Type} action, targeting position {Result[2].GridIndexPosition}")
+            #print()
+            #print("After Action:")
+            #PrintGrid(MapCopy)
+            #PrintUnits(UnitsForACopy)
+            #PrintUnits(UnitsForBCopy)
+            #print()
+            #input()
         
         if len(KilledUnits) != 0:
             AllUnits = []
@@ -338,6 +351,7 @@ def Internal_Battle(
             AllUnits.extend(UnitsForBCopy)
             AllUnits.sort(key=UnitSort, reverse=True)
 
+    ToReturn.Winner = Owner.AgentA if len(UnitsForACopy) != 0 else Owner.AgentB
 
     return ToReturn
 
@@ -367,20 +381,34 @@ if __name__ == "__main__":
 
     MockUnitsA = list(
         [
-            UnitStat(2, 5, 2, 2, 10, 0, 10, [1, 13], Owner.AgentA),
-            UnitStat(2, 1, 3, 3, 10, 1, 10, [2, 13], Owner.AgentA)
+            UnitStat(2, 5, 2, 2, 10, 0, 10, [0, 13], Owner.AgentA),
+            UnitStat(2, 1, 3, 3, 10, 1, 10, [1, 13], Owner.AgentA),
+            UnitStat(2, 5, 2, 2, 10, 2, 10, [2, 13], Owner.AgentA),
+            UnitStat(2, 1, 3, 3, 10, 3, 10, [3, 13], Owner.AgentA),
+            UnitStat(2, 5, 2, 2, 10, 4, 10, [4, 13], Owner.AgentA),
+            UnitStat(2, 1, 3, 3, 10, 5, 10, [5, 13], Owner.AgentA)
         ]
     )
 
     MockUnitsB = list(
         [
-            UnitStat(2, 5, 3, 4, 10, 2, 10, [1, 0], Owner.AgentB),
-            UnitStat(2, 3, 2, 1, 10, 3, 10, [2, 0], Owner.AgentB)
+            UnitStat(2, 5, 3, 4, 10, 6, 10, [0, 0], Owner.AgentB),
+            UnitStat(2, 3, 2, 1, 10, 7, 10, [1, 0], Owner.AgentB),
+            UnitStat(2, 5, 3, 4, 10, 8, 10, [2, 0], Owner.AgentB),
+            UnitStat(2, 3, 2, 1, 10, 9, 10, [3, 0], Owner.AgentB),
+            UnitStat(2, 5, 3, 4, 10, 10, 10, [4, 0], Owner.AgentB),
+            UnitStat(2, 3, 2, 1, 10, 11, 10, [5, 0], Owner.AgentB)
         ]
     )
     
-    results = Internal_Battle(MockUnitsA, MockUnitsB, MockGrid)
+    StartTime = time.time()
+    TestIterations = 1000
+    for i in range(0, TestIterations):
+        results = Internal_Battle(MockUnitsA, MockUnitsB, MockGrid)
     
+    EndTime = time.time()
+
+    print((EndTime-StartTime)/TestIterations)
     
 
 
