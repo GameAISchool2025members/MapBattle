@@ -13,7 +13,7 @@ from battle_session import BattleStats
 # pygame setup
 pygame.init()
 pygame.display.set_caption("Map Battle")
-resolution = (1280, 720)
+resolution = (480, 720)
 screen = pygame.display.set_mode(resolution, pygame.SCALED)
 clock = pygame.time.Clock()
 running = True
@@ -21,14 +21,13 @@ dt = 0
 timeBetweenMoves = 0.5
 
 battleSession = BattleStats()
+init_data = game_init.setup_battle(8, 12, 3)
+run_counter: int = 0
 
 gameStateManager = game_state_manager.GameStateManager()
 uiManager = pygame_gui.UIManager(resolution)
 menu = menu.Menu(uiManager, screen)
-pre_phase = pre_phase.PrePhase(uiManager, screen)
-
-init_data = game_init.setup_battle(8, 12, 3)
-run_counter: int = 0
+pre_phase = pre_phase.PrePhase(uiManager, screen, init_data)
 
 while running:
     # limits FPS to 60

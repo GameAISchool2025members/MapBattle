@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from time import time
 from typing import List, Tuple
 from enum import Enum
+from pygame_gui.elements import UIButton
 import uuid
 import random
 
@@ -45,7 +46,15 @@ class Grid:
     Height: int
     Cells: List[List[int]]
 
-    # Position [0, 0] is BOTTOM LEFT
+    # Position [0, 0] is TOP LEFT
+
+@dataclass
+class Map:
+    Width: int
+    Height: int
+    Cells: List[List[UIButton]]
+
+    # Position [0, 0] is TOP LEFT
 
 @dataclass
 class ActionResult:
