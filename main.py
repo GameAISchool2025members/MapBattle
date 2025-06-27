@@ -54,20 +54,19 @@ while running:
             menu.show_menu()
             menu.display_menu()
         case game_state_manager.GameState.PRE_PHASE:
-            pre_phase.display_map()
             pre_phase.run(gameStateManager, init_data, run_counter)
         case game_state_manager.GameState.BATTLE_PHASE:
-            if gameStateManager.GetBattleGenerator() == None:
+            if gameStateManager.GetGenerator() == None:
                 timeSinceLastMove = 0
-                gameStateManager.SetBattleGenerator(battle_phase.run(
+                gameStateManager.SetGenerator(battle_phase.run(
                     gameStateManager,
                     init_data,
                     battleSession
                 ))
             if timeSinceLastMove >= timeBetweenMoves:
-                result = next(gameStateManager.GetBattleGenerator())
+                result = next(gameStateManager.GetGenerator())
                 if result[0] == True:
-                    gameStateManager.SetBattleGenerator(None)
+                    gameStateManager.SetGenerator(None)
                 # HANDLE UPDATE FOR RENDERING HERE!!!!!
                 print("Action Taken")
 

@@ -10,7 +10,7 @@ class GameState(Enum):
 class GameStateManager:
     def __init__(self):
         self.state = GameState.MENU
-        self.battle_generator = None
+        self.generator = None
 
     def get_state(self):
         return self.state
@@ -18,8 +18,8 @@ class GameStateManager:
     def set_state(self, state):
         self.state = state
 
-    def SetBattleGenerator(self, battle_generator):
-        self.battle_generator = battle_generator
+    def SetGenerator(self, generator):
+        self.generator = generator
     
-    def GetBattleGenerator(self):
-        return self.battle_generator
+    def GetGenerator(self):
+        return self.generator
