@@ -10,6 +10,24 @@ import pre_phase
 import battle_phase
 import end_phase
 from battle_session import BattleStats
+from typing import List
+from data_structs import Grid, UnitStat
+
+def UpdateGrid(MapGrid: Grid, AgentAUnits: List[UnitStat], AgentBUnits: List[UnitStat], Visuals: VisualGrid.VisualGrid):
+    image_blank = "./media/Blank.png"
+    image_tree = "./media/TreeSprite.png"
+    image_agent_a = "./media/MalmoitAlpha.png"
+    image_agent_b = "./media/SkriemasAlpha.png"
+
+    for x in range(0, MapGrid.Width):
+        for y in range(0, MapGrid.Height):
+            if MapGrid.Cells[y][x] == 0:
+                Visuals.set_image([x, y], image_blank)
+            elif MapGrid.Cells[y][x] == 1:
+                Visuals.set_image([x,y], image_tree)
+
+
+
 
 # pygame setup
 pygame.init()
@@ -28,7 +46,7 @@ run_counter = 0
 gameStateManager = game_state_manager.GameStateManager()
 uiManager = pygame_gui.UIManager(resolution)
 menu = menu.Menu(uiManager, screen)
-visual_grid = VisualGrid.VisualGrid(uiManager, screen, init_data)
+
 #pre_phase = pre_phase.PrePhase(uiManager, screen, init_data)
 ai_thinking = False
 
@@ -60,7 +78,6 @@ while running:
             menu.show_menu()
             menu.display_menu()
         case game_state_manager.GameState.PRE_PHASE:
-            visual_grid.display_map()
             if gameStateManager.GetGenerator() == None:
                 gameStateManager.SetGenerator(pre_phase.run(gameStateManager, init_data, run_counter))
                 if run_counter:
@@ -85,7 +102,9 @@ while running:
                 if result == None:
                     gameStateManager.SetGenerator(None)
             else:
+                visual_grid = VisualGrid.VisualGrid(uiManager, screen, init_data)
                 result = next(gameStateManager.GetGenerator())
+                visual_grid.display_map()
                 # Handle Player Changing Battlefield
 
 
@@ -103,10 +122,16 @@ while running:
                 result = next(gameStateManager.GetGenerator())
                 if result[0] == True:
                     gameStateManager.SetGenerator(None)
-                # HANDLE UPDATE FOR RENDERING HERE!!!!!
-                print("Action Taken")
+                else:
+                    # HANDLE UPDATE FOR RENDERING HERE!!!!!
+                    print("Action Taken")
+                    visual_grid = VisualGrid.VisualGrid(uiManager, screen, init_data)
 
-                timeSinceLastMove = 0
+                    UpdateGrid(Result[1], Result[2], Result[3], visual_grid)
+
+                    visual_grid.display_map()
+
+                    timeSinceLastMove = 0
             else:
                 timeSinceLastMove += dt
         case game_state_manager.GameState.END_PHASE:
