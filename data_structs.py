@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from time import time
 from typing import List, Tuple
 from enum import Enum
+from EA_implementation import generate_random_unit
 import uuid
 
 class ActionType(Enum):
@@ -13,32 +14,6 @@ class Owner(Enum):
     NoOwner = 0,
     AgentA = 1,
     AgentB = 2,
-
-
-@dataclass
-class UnitStat:
-    Range: int
-    TurnOrderSpeed: int
-    MoveRange: int
-    Damage: int
-    MaxHealth: int
-
-    UnitID: int
-    CurrentHealth: int
-    CurrentPosition: Tuple[int, int]
-    OwningAgent: Owner
-    def from_genome(genome: List[int], owning_agent: Owner) -> 'UnitStat':
-        return UnitStat(
-            Range=genome[0],
-            TurnOrderSpeed=genome[1],
-            MoveRange=genome[2],
-            Damage=genome[3],
-            MaxHealth=genome[4],
-            UnitID=uuid.uuid4().int,  # Generate a unique ID for the unit
-            CurrentHealth=genome[4],
-            CurrentPosition=(genome[5], genome[6]),
-            OwningAgent=owning_agent
-        )
     
 @dataclass
 class StatRanges:
@@ -90,3 +65,34 @@ class Action:
 class ResultOfBattle:
     ActionsTaken: List[Action]
     Winner: Owner
+
+
+@dataclass
+class UnitStat:
+    Range: int
+    TurnOrderSpeed: int
+    MoveRange: int
+    Damage: int
+    MaxHealth: int
+
+    UnitID: int
+    CurrentHealth: int
+    CurrentPosition: Tuple[int, int]
+    OwningAgent: Owner
+
+    def from_genome(genome: List[int], owning_agent: Owner) -> 'UnitStat':
+        return UnitStat(
+            Range=genome[0],
+            TurnOrderSpeed=genome[1],
+            MoveRange=genome[2],
+            Damage=genome[3],
+            MaxHealth=genome[4],
+            UnitID=uuid.uuid4().int,  # Generate a unique ID for the unit
+            CurrentHealth=genome[4],
+            CurrentPosition=(genome[5], genome[6]),
+            OwningAgent=owning_agent
+        )
+    
+    def generate_unit(budget: int, owning_agent: Owner, map: Grid):
+        genome = generate_random_unit(budget, owning_agent == Owner.AgentA, map)
+        return UnitStat.from_genome(genome, owning_agent)
