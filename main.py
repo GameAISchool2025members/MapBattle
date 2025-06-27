@@ -19,9 +19,10 @@ dt = 0
 gameStateManager = game_state_manager.GameStateManager()
 uiManager = pygame_gui.UIManager(resolution)
 menu = menu.Menu(uiManager, screen)
+pre_phase = pre_phase.PrePhase(uiManager, screen)
 
 init_data = game_init.setup_battle(8, 12, 3)
-run_counter: int = 1
+run_counter: int = 0
 
 while running:
     # limits FPS to 60
@@ -34,9 +35,9 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
-        if event.type == pygame_gui.UI_BUTTON_PRESSED:
+        elif event.type == pygame_gui.UI_BUTTON_PRESSED:
             if event.ui_element == menu.get_play_button():
+                menu.clear_menu()
                 gameStateManager.set_state(game_state_manager.GameState.PRE_PHASE)
             elif event.ui_element == menu.get_quit_button():
                 gameStateManager.set_state(game_state_manager.GameState.QUIT)
@@ -47,6 +48,7 @@ while running:
         case game_state_manager.GameState.MENU:
             menu.display_menu()
         case game_state_manager.GameState.PRE_PHASE:
+            pre_phase.display_map()
             pre_phase.run(gameStateManager, init_data, run_counter)
         case game_state_manager.GameState.BATTLE_PHASE:
             battle_phase.run(gameStateManager, init_data)

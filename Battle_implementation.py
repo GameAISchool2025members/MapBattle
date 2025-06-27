@@ -13,6 +13,13 @@ def ManhattanDistanceBetweenPoints(
 
     return abs(PosA[0] - PosB[0]) + abs(PosA[1] - PosB[1])
 
+def AttackDistanceBetweenPoints(
+        PosA: Tuple[int, int],
+        PosB: Tuple[int, int]
+    ) -> int:
+
+    return min(abs(PosA[0] - PosB[0]), abs(PosA[1] - PosB[1]))
+
 def FindUnitIndexByID(
         AllUnits: List[UnitStat],
         UnitToFind: int
@@ -45,6 +52,7 @@ def ApplyMoveAction(
     MapGridCopy = MapGrid
     ActionToReturn = ActionToApply
 
+    #print(UnitTakingAction.UnitID)
     NewPos = ActionToReturn.GridIndexPosition
     OldPos = UnitTakingAction.CurrentPosition
 
@@ -119,7 +127,7 @@ def IsEnemyInRange(UnitTakingAction: UnitStat,
     UnitAPos = UnitTakingAction.CurrentPosition
     UnitBPos = EnemyToCheck.CurrentPosition
 
-    return ManhattanDistanceBetweenPoints(UnitAPos, UnitBPos) <= UnitTakingAction.Range
+    return AttackDistanceBetweenPoints(UnitAPos, UnitBPos) <= UnitTakingAction.Range
 
 
 def GetAllEnemiesInRange(
@@ -185,7 +193,7 @@ def FindPositionToMoveTo(
             AvailableSteps: int
         ) -> Tuple[int, int]:
 
-    BestPathTargetPos = [-1, -1]
+    BestPathTargetPos = tuple([-1, -1])
     BestPath = []
     ShortestDistance = float('inf')
 
@@ -201,8 +209,10 @@ def FindPositionToMoveTo(
     if len(BestPath) == 0 or BestPath == [StartPos]:
         return []
 
-    if BestPath[-1] == BestPathTargetPos:
+    #print(BestPath)
+    if BestPath[-1][0] == BestPathTargetPos[0] and BestPath[-1][1] == BestPathTargetPos[1]:
         BestPath.pop()
+    #print(BestPath)
 
     if len(BestPath) > AvailableSteps:
         return BestPath[AvailableSteps]
@@ -248,6 +258,7 @@ def DecideAction(
             AllEnemyPositions,
             MapGridCopy,
             UnitTakingAction.MoveRange)
+        #print(PositionToMoveTo)
         if len(PositionToMoveTo) == 0:
             ReturnAction.Type = ActionType.NoneOP
         ReturnAction.GridIndexPosition = PositionToMoveTo
@@ -277,6 +288,9 @@ def Internal_Battle(
     AllUnits = []
     AllUnits.extend(UnitsForACopy)
     AllUnits.extend(UnitsForBCopy)
+
+    for Unit in AllUnits:
+        MapCopy.Cells[Unit.CurrentPosition[1]][Unit.CurrentPosition[0]] = 2
 
     #print("Before Battle:")
     #PrintGrid(MapCopy)
@@ -314,7 +328,7 @@ def Internal_Battle(
             #PrintUnits(UnitsForACopy)
             #PrintUnits(UnitsForBCopy)
             #print()
-
+            #print(len(EnemyList))
             Result = ApplyAction(Unit, EnemyList, MapCopy, ActionToTake)
 
             if Result[2].Type == ActionType.Attack and Result[2].ResultOfAction.Dead == True:
@@ -335,6 +349,7 @@ def Internal_Battle(
                         
             MapCopy = Result[1]
             ToReturn.ActionsTaken.append(Result[2])
+            print(Result[2].Type)
 
             #print(f"Unit {Unit.UnitID} took the {Result[2].Type} action, targeting position {Result[2].GridIndexPosition}")
             #print()
