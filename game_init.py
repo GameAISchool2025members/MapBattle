@@ -5,6 +5,9 @@ from typing import List
 from starting_positions import get_agent_random_starting_positions
 import random
 
+@dataclass
+class Resources:
+    UsedResources: int
 
 @dataclass
 class BattleState:
@@ -13,6 +16,7 @@ class BattleState:
     GameGrid: Grid
     BoardWidth: int
     BoardHeight: int
+    UsedResources: Resources
 
 
 def create_random_units(num_units: int, owner: Owner, start_positions: List[tuple], game_grid: Grid) -> List[UnitStat]:
@@ -91,5 +95,6 @@ def setup_battle(in_board_width: int, in_board_height, in_num_units_per_agent) -
         UnitsAgentB=units_agent_b,
         GameGrid=game_grid,
         BoardWidth=board_width,
-        BoardHeight=board_height
+        BoardHeight=board_height,
+        UsedResources=[0]
     )

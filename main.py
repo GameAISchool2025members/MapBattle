@@ -85,6 +85,7 @@ while running:
             menu.display_menu()
         case game_state_manager.GameState.PRE_PHASE:
             if gameStateManager.GetGenerator() == None:
+                init_data.UsedResources = game_init.Resources(0)
                 gameStateManager.SetGenerator(pre_phase.run(gameStateManager, init_data, run_counter, visual_grid, maxResources))
                 if run_counter:
                     # DISPLAY "WAITING FOR AI"
@@ -93,9 +94,6 @@ while running:
                     text_pos = text.get_rect(centerx=screen.get_width() / 2, y=screen.get_height()/2)
                     screen.blit(text, text_pos)
                     ai_thinking = True
-                else:
-                    next(gameStateManager.GetGenerator())
-                    gameStateManager.SetGenerator(None)
 
             elif ai_thinking:
                 result = next(gameStateManager.GetGenerator())
@@ -108,10 +106,12 @@ while running:
                 if result == None:
                     gameStateManager.SetGenerator(None)
             else:
+                UpdateGrid(init_data.GameGrid, init_data.UnitsAgentA, init_data.UnitsAgentB, visual_grid)
+                visual_grid.display_map()
                 result = next(gameStateManager.GetGenerator())
+                UpdateGrid(init_data.GameGrid, init_data.UnitsAgentA, init_data.UnitsAgentB, visual_grid)
                 visual_grid.display_map()
                 # Handle Player Changing Battlefield
-
 
                 if result == None:
                     gameStateManager.SetGenerator(None)

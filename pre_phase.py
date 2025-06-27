@@ -19,25 +19,26 @@ def run(gameStateManager: game_state_manager, init_data: game_init.BattleState, 
                                 0
                                 )
         
-    usedResources = [0]
 
-    def handle_press(x, y, init_data, usedResources):
-        usedResources[0] = usedResources[0] + 1
+    def handle_press(x, y):
+        init_data.UsedResources = game_init.Resources(init_data.UsedResources.UsedResources + 1) # Safely modifies the shared counter
         if init_data.GameGrid.Cells[y][x] == 0:
             init_data.GameGrid.Cells[y][x] = 1
         else:
             init_data.GameGrid.Cells[y][x] = 0
+        print(f"Clicked: ({x}, {y}) — usedResources = {init_data.UsedResources.UsedResources}")  # Debug
 
-    all_functions = []
+    def make_callback(x, y):
+        # Each lambda captures its own x and y values
+        return lambda button: handle_press(x, y)
 
+    # Register buttons
     for x in range(0, Visual.map.Width):
-        for y in range(2, Visual.map.Height - 0):
-            
-            Visual.set_callback_function_pressed([x, y], 
-            lambda button: handle_press(x, y, init_data, usedResources))
+        for y in range(2, Visual.map.Height - 2):
+            Visual.set_callback_function_pressed([x, y], make_callback(x, y))
 
-
-    while usedResources[0] != MaxResources:
+    # Wait for enough resources to be used
+    while init_data.UsedResources.UsedResources != MaxResources:
         yield False
 
     for x in range(0, Visual.map.Width):
@@ -45,4 +46,4 @@ def run(gameStateManager: game_state_manager, init_data: game_init.BattleState, 
             Visual.set_callback_function_pressed([x, y], None)
 
     gameStateManager.set_state(game_state_manager.GameState.BATTLE_PHASE)
-    yield True
+    yield None
