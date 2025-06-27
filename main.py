@@ -18,6 +18,7 @@ screen = pygame.display.set_mode(resolution, pygame.SCALED)
 clock = pygame.time.Clock()
 running = True
 dt = 0
+timeBetweenMoves = 0.5
 
 battleSession = BattleStats()
 
@@ -57,7 +58,23 @@ while running:
             pre_phase.display_map()
             pre_phase.run(gameStateManager, init_data, run_counter)
         case game_state_manager.GameState.BATTLE_PHASE:
-            battle_phase.run(gameStateManager, init_data, battleSession)
+            if gameStateManager.GetBattleGenerator() == None:
+                timeSinceLastMove = 0
+                gameStateManager.SetBattleGenerator(battle_phase.run(
+                    gameStateManager,
+                    init_data,
+                    battleSession
+                ))
+            if timeSinceLastMove >= timeBetweenMoves:
+                result = next(gameStateManager.GetBattleGenerator())
+                if result[0] == True:
+                    gameStateManager.SetBattleGenerator(None)
+                # HANDLE UPDATE FOR RENDERING HERE!!!!!
+                print("Action Taken")
+
+                timeSinceLastMove = 0
+            else:
+                timeSinceLastMove += dt
         case game_state_manager.GameState.END_PHASE:
             end_phase.run(gameStateManager, battleSession)
         case game_state_manager.GameState.QUIT:

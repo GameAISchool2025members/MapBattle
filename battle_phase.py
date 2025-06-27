@@ -145,8 +145,10 @@ def run(gameStateManager: game_state_manager, init_data: game_init.BattleState, 
             Path = FindPathToTarget(Unit.CurrentPosition, ActionTaken.GridIndexPosition, MapCopy)
             for Step in Path:
                 ApplyMoveAction(Unit, Step, MapCopy)
+        yield [False, MapCopy, UnitsForA, UnitsForB]
 
     battle_session.add_battle_result(battle_result)
 
 
     gameStateManager.set_state(game_state_manager.GameState.END_PHASE)
+    yield [True, None, None, None]
