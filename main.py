@@ -14,7 +14,7 @@ from typing import List
 from data_structs import Grid, UnitStat
 
 def UpdateGrid(MapGrid: Grid, AgentAUnits: List[UnitStat], AgentBUnits: List[UnitStat], Visuals: VisualGrid.VisualGrid):
-    image_blank = "./media/BlackAlpha50_64x64.png"
+    image_blank = "./media/BlackAlpha100_64x64.png"
     image_tree = "./media/TreeSprite_64x64.png"
     image_agent_a = "./media/MalmoitAlpha_64x64.png"
     image_agent_b = "./media/SkriemasAlpha_64x64.png"
@@ -52,20 +52,15 @@ gameStateManager = game_state_manager.GameStateManager()
 uiManager = pygame_gui.UIManager(resolution)
 menu = menu.Menu(uiManager, screen)
 visual_grid = VisualGrid.VisualGrid(uiManager, screen, init_data)
+visual_grid.hide()
 
-#pre_phase = pre_phase.PrePhase(uiManager, screen, init_data)
 ai_thinking = False
 
 while running:
-    # limits FPS to 60
-    # dt is delta time in seconds since last frame, used for framerate-
-    # independent physics.
     dt = clock.tick(60) / 1000
     if not ai_thinking:
         screen.fill((170, 238, 187))
 
-    # poll for events
-    # pygame.QUIT event means the user clicked X to close your window
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -90,7 +85,7 @@ while running:
                 if run_counter:
                     # DISPLAY "WAITING FOR AI"
                     font = pygame.font.Font(None, 32)
-                    text = font.render("Please wait: The AI is Thinking", True, (0, 0, 0))  # Black
+                    text = font.render("Please wait: Evolution in Process", True, (0, 0, 0))  # Black
                     text_pos = text.get_rect(centerx=screen.get_width() / 2, y=screen.get_height()/2)
                     screen.blit(text, text_pos)
                     ai_thinking = True
@@ -106,12 +101,12 @@ while running:
                 if result == None:
                     gameStateManager.SetGenerator(None)
             else:
+                visual_grid.show()
                 UpdateGrid(init_data.GameGrid, init_data.UnitsAgentA, init_data.UnitsAgentB, visual_grid)
                 visual_grid.display_map()
                 result = next(gameStateManager.GetGenerator())
                 UpdateGrid(init_data.GameGrid, init_data.UnitsAgentA, init_data.UnitsAgentB, visual_grid)
                 visual_grid.display_map()
-                # Handle Player Changing Battlefield
 
                 if result == None:
                     gameStateManager.SetGenerator(None)
@@ -128,7 +123,6 @@ while running:
                 if result[0] == True:
                     gameStateManager.SetGenerator(None)
                 else:
-                    # HANDLE UPDATE FOR RENDERING HERE!!!!!
                     print("Action Taken")
 
                     UpdateGrid(result[1], result[2], result[3], visual_grid)
@@ -141,6 +135,7 @@ while running:
         case game_state_manager.GameState.END_PHASE:
             end_phase.run(gameStateManager, battleSession)
             run_counter += 1
+            visual_grid.hide()
         case game_state_manager.GameState.QUIT:
             running = False
 
