@@ -30,6 +30,11 @@ class Menu:
             text_pos = text.get_rect(centerx=self.background.get_width()/2, y=10)
             self.background.blit(text, text_pos)
 
+    def clear_menu(self):
+        self.screen.fill("black")
+        self.play_button.kill()
+        self.quit_button.kill()
+
     def get_play_button(self):
         return self.play_button
 
