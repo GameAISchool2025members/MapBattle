@@ -13,6 +13,13 @@ def ManhattanDistanceBetweenPoints(
 
     return abs(PosA[0] - PosB[0]) + abs(PosA[1] - PosB[1])
 
+def AttackDistanceBetweenPoints(
+        PosA: Tuple[int, int],
+        PosB: Tuple[int, int]
+    ) -> int:
+
+    return min(abs(PosA[0] - PosB[0]), abs(PosA[1] - PosB[1]))
+
 def FindUnitIndexByID(
         AllUnits: List[UnitStat],
         UnitToFind: int
@@ -120,7 +127,7 @@ def IsEnemyInRange(UnitTakingAction: UnitStat,
     UnitAPos = UnitTakingAction.CurrentPosition
     UnitBPos = EnemyToCheck.CurrentPosition
 
-    return ManhattanDistanceBetweenPoints(UnitAPos, UnitBPos) <= UnitTakingAction.Range
+    return AttackDistanceBetweenPoints(UnitAPos, UnitBPos) <= UnitTakingAction.Range
 
 
 def GetAllEnemiesInRange(
