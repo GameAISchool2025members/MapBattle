@@ -42,6 +42,18 @@ class VisualGrid:
                     text='',
                     manager=manager))
 
+    def hide(self):
+        for h in range(self.map.Height):
+            for w in range(self.map.Width):
+                self.map.Cells[h][w].disable()
+                self.map.Cells[h][w].hide()
+
+    def show(self):
+        for h in range(self.map.Height):
+            for w in range(self.map.Width):
+                self.map.Cells[h][w].enable()
+                self.map.Cells[h][w].show()
+
     def display_map(self):
         self.screen.blit(self.background, (0, 0))
 
@@ -49,6 +61,10 @@ class VisualGrid:
         button = self.map.Cells[index[1]][index[0]]
         button_image = pygame.image.load(image_path)
         button.image = button_image
+        button.hovered_images = [button_image]
+        button.normal_images = [button_image]
+        button.selected_images = [button_image]
+        button.disabled_images = [button_image]
         #self.background.convert_alpha()
         #self.background.blit(button_image, button.relative_rect)
     
