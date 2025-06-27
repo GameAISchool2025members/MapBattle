@@ -1,10 +1,10 @@
 import os
-
 import pygame
 import pygame_gui
 from pygame_gui.elements import UIButton
 from typing import Tuple
 from data_structs import Map
+from collections.abc import Callable
 
 class VisualGrid:
     def __init__(self, manager, screen, init_data):
@@ -50,18 +50,26 @@ class VisualGrid:
         button_image = pygame.image.load(image_path)
         self.background.convert_alpha()
         self.background.blit(button_image, button.relative_rect)
-        return
     
     def set_hover_image(self, index: Tuple[int, int], image_path: str):
-        return
+        button = self.map.Cells[index[1]][index[0]]
+        button_image = pygame.image.load(image_path)
+        self.background.convert_alpha()
+        self.background.blit(button_image, button.relative_rect)
     
     def set_selected_image(self, index: Tuple[int, int], image_path: str):
-        return
+        button = self.map.Cells[index[1]][index[0]]
+        button_image = pygame.image.load(image_path)
+        self.background.convert_alpha()
+        self.background.blit(button_image, button.relative_rect)
     
     def set_disable_image(self, index: Tuple[int, int], image_path: str):
-        return
+        button = self.map.Cells[index[1]][index[0]]
+        clear_surface = pygame.Surface(button.relative_rect)
+        clear_surface = clear_surface.convert()
+        clear_surface.fill((170, 238, 187)) # Green
+        self.background.blit(clear_surface, button.relative_rect)
 
-    """
-    def set_callback_function_pressed(self, index: Tuple[int, int], func: function):
-        return
-    """
+    def set_callback_function_pressed(self, index: Tuple[int, int], func: Callable):
+        button = self.map.Cells[index[1]][index[0]]
+        button.bind(pygame_gui.UI_BUTTON_PRESSED, func)
