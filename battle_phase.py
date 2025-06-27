@@ -141,11 +141,12 @@ def run(gameStateManager: game_state_manager, init_data: game_init.BattleState, 
                 ApplyAttackAction(Unit, UnitsForB, MapCopy, ActionTaken)
             elif Unit.OwningAgent == Owner.AgentB:
                 ApplyAttackAction(Unit, UnitsForA, MapCopy, ActionTaken)
+            yield [False, MapCopy, UnitsForA, UnitsForB]
         else:
             Path = FindPathToTarget(Unit.CurrentPosition, ActionTaken.GridIndexPosition, MapCopy)
             for Step in Path:
                 ApplyMoveAction(Unit, Step, MapCopy)
-        yield [False, MapCopy, UnitsForA, UnitsForB]
+                yield [False, MapCopy, UnitsForA, UnitsForB]
 
     battle_session.add_battle_result(battle_result)
 
