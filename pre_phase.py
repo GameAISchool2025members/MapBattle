@@ -24,19 +24,14 @@ class PrePhase:
             Cells = []
         )
 
-
         for h in range(self.map.Height):
             self.map.Cells.append([])
-
 
         button_width = (self.screen.get_width() // self.map.Width) - 5
         button_height = (self.screen.get_height() // self.map.Height) - 5
         self.button_dim = pygame.Vector2(button_width, button_height)
         self.width_gap = int(self.map.Width * 2.5)
         self.height_gap = int(self.map.Height * 2.5)
-
-        # Initialize the grid (0 = empty, 1 = occupied)
-        # cells = [[0 for _ in range(board_width)] for _ in range(board_height)]
 
         for h in range(self.map.Height):
             height = self.height_gap + (h * self.button_dim.y)
