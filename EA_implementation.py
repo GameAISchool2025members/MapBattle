@@ -1,21 +1,21 @@
 from scipy import stats
 from data_structs import UnitStat, Grid, ResultOfBattle, StatRanges, Owner
 from typing import List, Tuple
-# from battle import Battle 
+from battle import Battle 
 import random
 import time
 
 #Dummy Battle Implementation
-def Battle( 
-    UnitsForAgentA: List[UnitStat],
-    UnitsForAgentB: List[UnitStat],
-    MapGrid: Grid
-        ) -> ResultOfBattle:
+# def Battle( 
+#     UnitsForAgentA: List[UnitStat],
+#     UnitsForAgentB: List[UnitStat],
+#     MapGrid: Grid
+#         ) -> ResultOfBattle:
 
-    return ResultOfBattle(
-        ActionsTaken=[],
-        Winner=Owner.AgentA if random.choice([True, False]) else Owner.AgentB
-    )
+#     return ResultOfBattle(
+#         ActionsTaken=[],
+#         Winner=Owner.AgentA if random.choice([True, False]) else Owner.AgentB
+#     )
 
 
 def Internal_RunEvolution(  
@@ -28,14 +28,13 @@ def Internal_RunEvolution(
         Seed: int
             ) -> Tuple[UnitStat, UnitStat]:
     random.seed(Seed)
-    population = [generate_random_unit(MaxUnitBudget) for _ in range(PopulationSize)]
 
     best_unit_a = evolution_loop(UnitsForAgentA, UnitsForAgentB, MapGrid, MaxUnitBudget, NumberOfGenerations, PopulationSize, is_agent_a=True)
     best_unit_b = evolution_loop(UnitsForAgentA, UnitsForAgentB, MapGrid, MaxUnitBudget, NumberOfGenerations, PopulationSize, is_agent_a=False)
 
     return best_unit_a, best_unit_b
 
-def generate_random_unit(budget: int) -> List[int]:
+def generate_random_unit(budget: int, is_agent_a: bool) -> List[int]:
     # Split budget randomly
     # TODO: Not sure if this is truly uniform
     ranges = StatRanges().get_ranges()
@@ -63,8 +62,8 @@ def evaluate_fitness(genome: List[int], units_for_agent_a: List[UnitStat], units
     results = 0
     unit = UnitStat.from_genome(genome, Owner.AgentA if is_agent_a else Owner.AgentB)
     for _ in range(iterations):
-        new_units_for_agent_a = units_for_agent_a + [unit] if is_agent_a else units_for_agent_a + [UnitStat.from_genome(generate_random_unit(budget), Owner.AgentA)]
-        new_units_for_agent_b = units_for_agent_b + [UnitStat.from_genome(generate_random_unit(budget), Owner.AgentB)] if is_agent_a else units_for_agent_b + [unit]
+        new_units_for_agent_a = units_for_agent_a + [unit] if is_agent_a else units_for_agent_a + [UnitStat.from_genome(generate_random_unit(budget, is_agent_a=True), Owner.AgentA)]
+        new_units_for_agent_b = units_for_agent_b + [UnitStat.from_genome(generate_random_unit(budget, is_agent_a=False), Owner.AgentB)] if is_agent_a else units_for_agent_b + [unit]
         result = Battle(new_units_for_agent_a, new_units_for_agent_b, map_grid)
         results += 1 if result.Winner == (Owner.AgentA if is_agent_a else Owner.AgentB) else 0
 
@@ -77,7 +76,7 @@ def select_parents(population: List[List[int]], fitness_scores: List[float]) -> 
     parents = random.choices(population, weights=selection_probs, k=2)
     return parents[0], parents[1]
 
-def generate_offspring(parents: Tuple[List[int], List[int]], budget: int) -> List[List[int]]:
+def generate_offspring(parents: Tuple[List[int], List[int]], budget: int, is_agent_a: bool) -> List[List[int]]:
     parent1, parent2 = parents
     # Crossover and mutation logic to create offspring
     offspring = []
@@ -117,14 +116,14 @@ def generate_offspring(parents: Tuple[List[int], List[int]], budget: int) -> Lis
     return offspring
 
 def evolution_loop(UnitsForAgentA: List[UnitStat], UnitsForAgentB: List[UnitStat], MapGrid: Grid, MaxUnitBudget: int, NumberOfGenerations: int, PopulationSize: int, is_agent_a: bool) -> UnitStat:
-    population = [generate_random_unit(MaxUnitBudget) for _ in range(PopulationSize)]
+    population = [generate_random_unit(MaxUnitBudget, is_agent_a=is_agent_a) for _ in range(PopulationSize)]
 
     for generation in range(NumberOfGenerations):
         fitness_scores = [evaluate_fitness(unit, UnitsForAgentA, UnitsForAgentB, MapGrid, is_agent_a, budget=MaxUnitBudget) for unit in population]
         offspring = []
         for _ in range(PopulationSize//2):
             parents = select_parents(population, fitness_scores)
-            offspring.extend(generate_offspring(parents, MaxUnitBudget))
+            offspring.extend(generate_offspring(parents, MaxUnitBudget, is_agent_a=is_agent_a))
         population = offspring
 
     return max(population, key=lambda unit: evaluate_fitness(unit, UnitsForAgentA, UnitsForAgentB, MapGrid, is_agent_a, budget=MaxUnitBudget))
@@ -178,7 +177,7 @@ if __name__ == "__main__":
     # Example usage
     units_a = [UnitStat.from_genome([1, 2, 3, 4, 5, 1, 1], Owner.AgentA)]
     units_b = [UnitStat.from_genome([2, 3, 4, 5, 6, 2, 2], Owner.AgentB)]
-    grid = Grid(10, 10, [[0]*10 for _ in range(10)])
+    grid = Grid(12, 14, [[0]*12 for _ in range(14)])
     
     best_a, best_b = Internal_RunEvolution(units_a, units_b, 20, grid, 10, 5, Seed=42)
     #We are setting global seed, which should not be a problem since the battle simulation is deterministic.

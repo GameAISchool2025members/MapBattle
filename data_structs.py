@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from time import time
 from typing import List, Tuple
 from enum import Enum
+import uuid
 
 class ActionType(Enum):
     NoneOP = 0,
@@ -33,7 +34,7 @@ class UnitStat:
             MoveRange=genome[2],
             Damage=genome[3],
             MaxHealth=genome[4],
-            UnitID=int(time()),  # Using current time as a unique ID
+            UnitID=uuid.uuid4().int,  # Generate a unique ID for the unit
             CurrentHealth=genome[4],
             CurrentPosition=(genome[5], genome[6]),
             OwningAgent=owning_agent
