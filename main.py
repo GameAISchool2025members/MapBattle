@@ -56,6 +56,7 @@ while running:
             menu.show_menu()
             menu.display_menu()
         case game_state_manager.GameState.PRE_PHASE:
+            visual_grid.display_map()
             if gameStateManager.GetGenerator() == None:
                 # DISPLAY "WAITING FOR AI"
                 gameStateManager.SetGenerator(pre_phase.run(gameStateManager, init_data, run_counter))
