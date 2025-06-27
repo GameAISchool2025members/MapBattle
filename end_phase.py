@@ -9,6 +9,8 @@ def run(gameStateManager: game_state_manager, battle_session: BattleStats):
 
     if battle_session.total_battles >= 4:
         print("Game end!")
+        battle_session.reset()
+        menu.reinit_menu()
         gameStateManager.set_state(game_state_manager.GameState.MENU)
     else:
         print("Next Battle...")
