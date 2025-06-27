@@ -1,6 +1,7 @@
 from data_structs import UnitStat, Grid, ResultOfBattle
 from typing import List, Tuple
 from EA_implementation import Internal_RunEvolution
+import asyncio
 
 
 def RunEvolution(  
@@ -13,7 +14,7 @@ def RunEvolution(
         Seed: int
             ) -> Tuple[UnitStat, UnitStat]:
     
-    return Internal_RunEvolution(
+    return asyncio.run(Internal_RunEvolution(
         UnitsForAgentA,
         UnitsForAgentB,
         MaxUnitBudget,
@@ -21,4 +22,4 @@ def RunEvolution(
         NumberOfGenerations,
         PopulationSize,
         Seed
-    )
+    ))

@@ -10,11 +10,12 @@ def run(gameStateManager: game_state_manager, init_data: game_init.BattleState, 
                                 init_data.UnitsAgentB,
                                 31 + run_counter,
                                 init_data.GameGrid,
-                                30,
+                                5,
                                 20,
                                 0
                                 )
     
+
     
 
     gameStateManager.set_state(game_state_manager.GameState.BATTLE_PHASE)

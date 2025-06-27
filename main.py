@@ -29,12 +29,16 @@ gameStateManager = game_state_manager.GameStateManager()
 uiManager = pygame_gui.UIManager(resolution)
 menu = menu.Menu(uiManager, screen)
 visual_grid = VisualGrid.VisualGrid(uiManager, screen, init_data)
+#pre_phase = pre_phase.PrePhase(uiManager, screen, init_data)
+ai_thinking = False
 
 while running:
     # limits FPS to 60
     # dt is delta time in seconds since last frame, used for framerate-
     # independent physics.
     dt = clock.tick(60) / 1000
+    if not ai_thinking:
+        screen.fill((170, 238, 187))
 
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
@@ -58,14 +62,30 @@ while running:
         case game_state_manager.GameState.PRE_PHASE:
             visual_grid.display_map()
             if gameStateManager.GetGenerator() == None:
-                # DISPLAY "WAITING FOR AI"
                 gameStateManager.SetGenerator(pre_phase.run(gameStateManager, init_data, run_counter))
+                if run_counter:
+                    # DISPLAY "WAITING FOR AI"
+                    font = pygame.font.Font(None, 32)
+                    text = font.render("Please wait: The AI is Thinking", True, (0, 0, 0))  # Black
+                    text_pos = text.get_rect(centerx=screen.get_width() / 2, y=screen.get_height()/2)
+                    screen.blit(text, text_pos)
+                    ai_thinking = True
+                else:
+                    next(gameStateManager.GetGenerator())
+                    gameStateManager.SetGenerator(None)
+
+            elif ai_thinking:
+                result = next(gameStateManager.GetGenerator())
+                ai_thinking = False
+
+                init_data.UnitsAgentA.append(result[0])
+                init_data.UnitsAgentB.append(result[1])
+
+                # Handle AI Evolution Done
+                if result == None:
+                    gameStateManager.SetGenerator(None)
             else:
                 result = next(gameStateManager.GetGenerator())
-                
-                # Handle AI Evolution Done
-
-
                 # Handle Player Changing Battlefield
 
 
@@ -91,6 +111,7 @@ while running:
                 timeSinceLastMove += dt
         case game_state_manager.GameState.END_PHASE:
             end_phase.run(gameStateManager, battleSession)
+            run_counter += 1
         case game_state_manager.GameState.QUIT:
             running = False
 
