@@ -3,6 +3,7 @@ import game_state_manager
 import game_init
 import copy
 from data_structs import UnitStat, Grid, Action, ActionType, Owner
+from battle_session import BattleStats
 from typing import List, Tuple
 from collections import deque
 
@@ -99,6 +100,26 @@ def FindPathToTarget(
 
     return ClosestPath
 
+def ApplyMoveAction(
+        UnitTakingAction: UnitStat,
+        TargetPos: Tuple[int, int],
+        MapGrid: Grid
+    ) -> None:
+
+    MapGridCopy = MapGrid
+    
+    NewPos = TargetPos
+    OldPos = UnitTakingAction.CurrentPosition
+
+    if NewPos == OldPos:
+        return
+
+    assert(MapGridCopy.Cells[NewPos[1]][NewPos[0]] == 0)
+    MapGridCopy.Cells[NewPos[1]][NewPos[0]] = 2
+    MapGridCopy.Cells[OldPos[1]][OldPos[0]] = 0
+
+    UnitTakingAction.CurrentPosition = NewPos
+
 def run(gameStateManager: game_state_manager, init_data: game_init.BattleState, battle_session: BattleStats):
     battle_result = battle.Battle(init_data.UnitsAgentA,
                                   init_data.UnitsAgentB,
@@ -122,8 +143,10 @@ def run(gameStateManager: game_state_manager, init_data: game_init.BattleState, 
                 ApplyAttackAction(Unit, UnitsForA, MapCopy, ActionTaken)
         else:
             Path = FindPathToTarget(Unit.CurrentPosition, ActionTaken.GridIndexPosition, MapCopy)
-            
+            for Step in Path:
+                ApplyMoveAction(Unit, Step, MapCopy)
 
+    battle_session.add_battle_result(battle_result)
 
 
     gameStateManager.set_state(game_state_manager.GameState.END_PHASE)
