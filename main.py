@@ -42,7 +42,7 @@ while running:
             running = False
         elif event.type == pygame_gui.UI_BUTTON_PRESSED:
             if event.ui_element == menu.get_play_button():
-                menu.clear_menu()
+                menu.hide_menu()
                 gameStateManager.set_state(game_state_manager.GameState.PRE_PHASE)
             elif event.ui_element == menu.get_quit_button():
                 gameStateManager.set_state(game_state_manager.GameState.QUIT)
@@ -51,6 +51,7 @@ while running:
 
     match gameStateManager.get_state():
         case game_state_manager.GameState.MENU:
+            menu.show_menu()
             menu.display_menu()
         case game_state_manager.GameState.PRE_PHASE:
             pre_phase.display_map()

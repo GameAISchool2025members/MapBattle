@@ -21,9 +21,10 @@ def create_random_units(num_units: int, owner: Owner, start_positions: List[tupl
     units = []
 
     for i in range(num_units):
+        """
         max_health = random.randint(30, 80)
 
-        """unit = UnitStat(
+        unit = UnitStat(
             Range=random.randint(1, 4),
             TurnOrderSpeed=random.randint(3, 8),
             MoveRange=random.randint(2, 5),

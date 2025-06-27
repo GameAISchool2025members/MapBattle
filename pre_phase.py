@@ -1,5 +1,6 @@
 import pygame
-import pygame_gui
+
+
 import evolution
 import game_init
 import game_state_manager
@@ -23,8 +24,8 @@ class PrePhase:
                                    init_data.UnitsAgentB,
                                    31 + run_counter,
                                    init_data.GameGrid,
-                                   1,
-                                   1,
+                                   30,
+                                   20,
                                    0
                                    )
         gameStateManager.set_state(game_state_manager.GameState.BATTLE_PHASE)
