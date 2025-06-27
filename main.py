@@ -14,7 +14,7 @@ from typing import List
 from data_structs import Grid, UnitStat
 
 def UpdateGrid(MapGrid: Grid, AgentAUnits: List[UnitStat], AgentBUnits: List[UnitStat], Visuals: VisualGrid.VisualGrid):
-    image_blank = "./media/Blank.png"
+    image_blank = "./media/BlackAlpha50.png"
     image_tree = "./media/TreeSprite.png"
     image_agent_a = "./media/MalmoitAlpha.png"
     image_agent_b = "./media/SkriemasAlpha.png"
@@ -26,6 +26,10 @@ def UpdateGrid(MapGrid: Grid, AgentAUnits: List[UnitStat], AgentBUnits: List[Uni
             elif MapGrid.Cells[y][x] == 1:
                 Visuals.set_image([x,y], image_tree)
 
+    for Agent in AgentAUnits:
+        Visuals.set_image(Agent.CurrentPosition, image_agent_a)
+    for Agent in AgentBUnits:
+        Visuals.set_image(Agent.CurrentPosition, image_agent_b)
 
 
 
@@ -127,7 +131,7 @@ while running:
                     print("Action Taken")
                     visual_grid = VisualGrid.VisualGrid(uiManager, screen, init_data)
 
-                    UpdateGrid(Result[1], Result[2], Result[3], visual_grid)
+                    UpdateGrid(result[1], result[2], result[3], visual_grid)
 
                     visual_grid.display_map()
 
