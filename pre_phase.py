@@ -2,9 +2,11 @@
 import evolution
 import game_init
 import game_state_manager
+import VisualGrid
 
 
-def run(gameStateManager: game_state_manager, init_data: game_init.BattleState, run_counter: int):
+
+def run(gameStateManager: game_state_manager, init_data: game_init.BattleState, run_counter: int, Visual: VisualGrid.VisualGrid):
     if run_counter:
         yield evolution.RunEvolution(init_data.UnitsAgentA,
                                 init_data.UnitsAgentB,

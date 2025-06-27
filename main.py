@@ -83,7 +83,7 @@ while running:
             menu.display_menu()
         case game_state_manager.GameState.PRE_PHASE:
             if gameStateManager.GetGenerator() == None:
-                gameStateManager.SetGenerator(pre_phase.run(gameStateManager, init_data, run_counter))
+                gameStateManager.SetGenerator(pre_phase.run(gameStateManager, init_data, run_counter, VisualGrid.VisualGrid(uiManager, screen, init_data)))
                 if run_counter:
                     # DISPLAY "WAITING FOR AI"
                     font = pygame.font.Font(None, 32)
@@ -106,7 +106,6 @@ while running:
                 if result == None:
                     gameStateManager.SetGenerator(None)
             else:
-                visual_grid = VisualGrid.VisualGrid(uiManager, screen, init_data)
                 result = next(gameStateManager.GetGenerator())
                 visual_grid.display_map()
                 # Handle Player Changing Battlefield
