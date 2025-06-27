@@ -27,6 +27,7 @@ async def Internal_RunEvolution(
     ]
     
     best_unit_a, best_unit_b = await asyncio.gather(*tasks)
+    
     return best_unit_a, best_unit_b
 
 
@@ -268,7 +269,6 @@ if __name__ == "__main__":
         PopulationSize=5, 
         Seed=42
     ))
-    print('This runs while evolution is running')
 
     #We are setting global seed, which should not be a problem since the battle simulation is deterministic.
     print("Best Unit A:", best_a)
