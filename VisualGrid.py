@@ -1,6 +1,8 @@
 import pygame
 import pygame_gui
 from pygame_gui.elements import UIButton
+from typing import Tuple
+from data_structs import Map
 
 
 class VisualGrid:
@@ -44,5 +46,23 @@ class VisualGrid:
                     text='Test (' + str(w) + ', ' + str(h) + ')',
                     manager=manager))
 
+
     def display_map(self):
         self.screen.blit(self.background, (0, 0))
+
+    def set_image(self, index: Tuple[int, int], image_path: str):
+        return
+    
+    def set_hover_image(self, index: Tuple[int. int], image_path: str):
+        return
+    
+    def set_selected_image(self, index: Tuple[int, int], image_path: str):
+        return
+    
+    def set_disable_image(self, index: Tuple[int, int], image_path: str):
+        return
+    
+    def set_calllback_function_pressed(self, index: Tuple[int, int], func: function):
+        return
+    
+    

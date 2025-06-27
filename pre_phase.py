@@ -2,7 +2,6 @@
 import evolution
 import game_init
 import game_state_manager
-from data_structs import Map
 
 
 def run(self, gameStateManager: game_state_manager, init_data: game_init.BattleState, run_counter: int):
