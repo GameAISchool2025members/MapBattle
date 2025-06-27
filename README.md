@@ -5,6 +5,7 @@ We are a team of four attending the 7<sup>th</sup> Artificial Intelligence and G
 
 ### Aji Daleni
 
+Currently working as an Unreal Engine tools developer after a career shift from building engineering, where I did CAD drawings and developed CAD tools.
 
 ### Andreas Jonasson
 A PhD student at Malmö, Sweden, researching Automatic Quality Assurance as part of the [Game Tech Academy](https://gametechacademy.dk/) project. Socials and research:
