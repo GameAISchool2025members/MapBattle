@@ -1,11 +1,14 @@
 import pygame
 import pygame_gui
+
+import battle
 import game_state_manager
 import menu
 import game_init
 import pre_phase
 import battle_phase
 import end_phase
+from battle_session import BattleStats
 
 # pygame setup
 pygame.init()
@@ -15,6 +18,8 @@ screen = pygame.display.set_mode(resolution, pygame.SCALED)
 clock = pygame.time.Clock()
 running = True
 dt = 0
+
+battleSession = BattleStats()
 
 gameStateManager = game_state_manager.GameStateManager()
 uiManager = pygame_gui.UIManager(resolution)
@@ -51,9 +56,9 @@ while running:
             pre_phase.display_map()
             pre_phase.run(gameStateManager, init_data, run_counter)
         case game_state_manager.GameState.BATTLE_PHASE:
-            battle_phase.run(gameStateManager, init_data)
+            battle_phase.run(gameStateManager, init_data, battleSession)
         case game_state_manager.GameState.END_PHASE:
-            end_phase.run(gameStateManager)
+            end_phase.run(gameStateManager, battleSession)
         case game_state_manager.GameState.QUIT:
             running = False
 

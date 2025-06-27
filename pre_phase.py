@@ -23,8 +23,8 @@ class PrePhase:
                                    init_data.UnitsAgentB,
                                    31 + run_counter,
                                    init_data.GameGrid,
-                                   69,
-                                   5,
+                                   1,
+                                   1,
                                    0
                                    )
         gameStateManager.set_state(game_state_manager.GameState.BATTLE_PHASE)

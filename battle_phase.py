@@ -99,7 +99,7 @@ def FindPathToTarget(
 
     return ClosestPath
 
-def run(gameStateManager: game_state_manager, init_data: game_init.BattleState):
+def run(gameStateManager: game_state_manager, init_data: game_init.BattleState, battle_session: BattleStats):
     battle_result = battle.Battle(init_data.UnitsAgentA,
                                   init_data.UnitsAgentB,
                                   init_data.GameGrid)
