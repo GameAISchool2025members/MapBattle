@@ -27,7 +27,7 @@ run_counter: int = 0
 gameStateManager = game_state_manager.GameStateManager()
 uiManager = pygame_gui.UIManager(resolution)
 menu = menu.Menu(uiManager, screen)
-pre_phase = pre_phase.PrePhase(uiManager, screen, init_data)
+#pre_phase = pre_phase.PrePhase(uiManager, screen, init_data)
 
 while running:
     # limits FPS to 60
