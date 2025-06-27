@@ -43,6 +43,7 @@ while running:
         elif event.type == pygame_gui.UI_BUTTON_PRESSED:
             if event.ui_element == menu.get_play_button():
                 menu.hide_menu()
+                menu.display_menu()
                 gameStateManager.set_state(game_state_manager.GameState.PRE_PHASE)
             elif event.ui_element == menu.get_quit_button():
                 gameStateManager.set_state(game_state_manager.GameState.QUIT)
@@ -54,7 +55,20 @@ while running:
             menu.show_menu()
             menu.display_menu()
         case game_state_manager.GameState.PRE_PHASE:
-            pre_phase.run(gameStateManager, init_data, run_counter)
+            if gameStateManager.GetGenerator() == None:
+                # DISPLAY "WAITING FOR AI"
+                gameStateManager.SetGenerator(pre_phase.run(gameStateManager, init_data, run_counter))
+            else:
+                result = next(gameStateManager.GetGenerator())
+                
+                # Handle AI Evolution Done
+
+
+                # Handle Player Changing Battlefield
+
+
+                if result == None:
+                    gameStateManager.SetGenerator(None)
         case game_state_manager.GameState.BATTLE_PHASE:
             if gameStateManager.GetGenerator() == None:
                 timeSinceLastMove = 0

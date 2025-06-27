@@ -18,3 +18,4 @@ def run(gameStateManager: game_state_manager, init_data: game_init.BattleState, 
     
 
     gameStateManager.set_state(game_state_manager.GameState.BATTLE_PHASE)
+    yield None
