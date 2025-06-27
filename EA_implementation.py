@@ -1,5 +1,5 @@
 from scipy import stats
-from data_structs import UnitStat, Grid, ResultOfBattle, StatRanges, Owner
+from data_structs import UnitStat, Grid, ResultOfBattle, StatRanges, Owner, generate_random_unit
 from typing import List, Tuple
 from battle import Battle 
 import random
@@ -35,30 +35,6 @@ def Internal_RunEvolution(
 
     return best_unit_a, best_unit_b
 
-def generate_random_unit(budget: int, is_agent_a: bool, map: Grid) -> List[int]:
-    # Split budget randomly
-    # TODO: Not sure if this is truly uniform
-    statranges = StatRanges()
-    statranges.set_map_bounds(map.Width, map.Height, is_agent_a)
-    ranges = statranges.get_ranges()
-    genome = [min_val for (min_val, max_val) in ranges]
-    remaining_budget = budget - sum(genome[:-2])
-    #Randomly distribute budget (budget does not apply to position)
-    for i, r in enumerate(ranges[:-2]):
-        min_val, max_val = r
-        if remaining_budget > 0:
-            allocated = random.randint(0, max_val-min_val)
-            value_change = min(allocated, remaining_budget)
-            genome[i] += value_change
-            remaining_budget -= value_change
-    genome[-2] = random.randint(statranges.get_mins()[-2], statranges.get_maxs()[-2])  # Random X position
-    genome[-1] = random.randint(statranges.get_mins()[-1], statranges.get_maxs()[-1])  # Random Y position
-
-    # Ensure the genome does not exceed the budget
-    assert sum(genome[:-2]) <= budget, "Genome exceeds budget"
-    assert all(genome[i] >= statranges.get_mins()[i] for i in range(len(genome))), "Genome has values below minimum"
-    assert all(genome[i] <= statranges.get_maxs()[i] for i in range(len(genome))), "Genome has values above maximum"
-    return genome
 
 
 def evaluate_fitness(genome: List[int], units_for_agent_a: List[UnitStat], units_for_agent_b: List[UnitStat], map_grid: Grid, is_agent_a: bool, budget: int, iterations: int = 10) -> float:

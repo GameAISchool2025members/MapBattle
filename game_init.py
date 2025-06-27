@@ -1,8 +1,10 @@
 from dataclasses import dataclass
+
 from data_structs import UnitStat, Grid, Owner
 from typing import List
 from starting_positions import get_agent_random_starting_positions
 import random
+
 
 @dataclass
 class BattleState:
@@ -13,23 +15,27 @@ class BattleState:
     BoardHeight: int
 
 
-def create_random_units(num_units: int, owner: Owner, start_positions: List[tuple], id_offset: int = 0) -> List[UnitStat]:
+def create_random_units(num_units: int, owner: Owner, start_positions: List[tuple], game_grid: Grid) -> List[UnitStat]:
     """Create random units for an agent"""
+
     units = []
 
     for i in range(num_units):
         max_health = random.randint(30, 80)
-        unit = UnitStat(
-            Range=random.randint(1, 4),           # Random range 1-4
-            TurnOrderSpeed=random.randint(3, 8),  # Random speed 3-8
-            MoveRange=random.randint(2, 5),       # Random move range 2-5
-            Damage=random.randint(8, 20),         # Random damage 8-20
-            MaxHealth=max_health,                 # Random health 30-80
-            UnitID=i + id_offset,                 # Unique IDs
-            CurrentHealth=max_health,             # Set to max health
+
+        """unit = UnitStat(
+            Range=random.randint(1, 4),
+            TurnOrderSpeed=random.randint(3, 8),
+            MoveRange=random.randint(2, 5),
+            Damage=random.randint(8, 20),
+            MaxHealth=max_health,
+            UnitID=i,
+            CurrentHealth=max_health,
             CurrentPosition=start_positions[i] if i < len(start_positions) else (0, 0),
-            OwningAgent=owner                     # Set the owner
+            OwningAgent=owner
         )
+        """
+        unit = UnitStat.generate_unit(32, owner, game_grid)
         units.append(unit)
 
     return units
@@ -64,13 +70,13 @@ def setup_battle(in_board_width: int, in_board_height, in_num_units_per_agent) -
         num_units_per_agent,
         Owner.AgentA,
         agent_a_positions,
-        id_offset=0
+        game_grid
     )
     units_agent_b = create_random_units(
         num_units_per_agent,
         Owner.AgentB,
         agent_b_positions,
-        id_offset=100  # Different ID range for Agent B
+        game_grid
     )
 
     # Mark occupied positions on the grid
