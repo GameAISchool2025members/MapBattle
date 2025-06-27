@@ -5,6 +5,7 @@ import battle
 import game_state_manager
 import menu
 import game_init
+import VisualGrid
 import pre_phase
 import battle_phase
 import end_phase
@@ -27,6 +28,7 @@ run_counter = 0
 gameStateManager = game_state_manager.GameStateManager()
 uiManager = pygame_gui.UIManager(resolution)
 menu = menu.Menu(uiManager, screen)
+visual_grid = VisualGrid.VisualGrid(uiManager, screen, init_data)
 #pre_phase = pre_phase.PrePhase(uiManager, screen, init_data)
 ai_thinking = False
 
@@ -58,6 +60,7 @@ while running:
             menu.show_menu()
             menu.display_menu()
         case game_state_manager.GameState.PRE_PHASE:
+            visual_grid.display_map()
             if gameStateManager.GetGenerator() == None:
                 gameStateManager.SetGenerator(pre_phase.run(gameStateManager, init_data, run_counter))
                 if run_counter:
