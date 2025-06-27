@@ -30,4 +30,11 @@ So as the turns progresses, both you and the AI adapt to each other, co-working 
 ## Is it fun?
 No
 
-## 
+## Is it pretty
+Yes(?)
+
+### Is it pretty because of GenerativeAI?
+...Yes?
+
+#### Is the GenerativeAI ethical?
+...No further questions
