@@ -1,9 +1,10 @@
+import os
+
 import pygame
 import pygame_gui
 from pygame_gui.elements import UIButton
 from typing import Tuple
 from data_structs import Map
-
 
 class VisualGrid:
     def __init__(self, manager, screen, init_data):
@@ -22,19 +23,14 @@ class VisualGrid:
             Cells = []
         )
 
-
         for h in range(self.map.Height):
             self.map.Cells.append([])
-
 
         button_width = (self.screen.get_width() // self.map.Width) - 5
         button_height = (self.screen.get_height() // self.map.Height) - 5
         self.button_dim = pygame.Vector2(button_width, button_height)
         self.width_gap = int(self.map.Width * 2.5)
         self.height_gap = int(self.map.Height * 2.5)
-
-        # Initialize the grid (0 = empty, 1 = occupied)
-        # cells = [[0 for _ in range(board_width)] for _ in range(board_height)]
 
         for h in range(self.map.Height):
             height = self.height_gap + (h * self.button_dim.y)
@@ -46,14 +42,17 @@ class VisualGrid:
                     text='Test (' + str(w) + ', ' + str(h) + ')',
                     manager=manager))
 
-
     def display_map(self):
         self.screen.blit(self.background, (0, 0))
 
     def set_image(self, index: Tuple[int, int], image_path: str):
+        button = self.map.Cells[index[1]][index[0]]
+        button_image = pygame.image.load(image_path)
+        self.background.convert_alpha()
+        self.background.blit(button_image, button.relative_rect)
         return
     
-    def set_hover_image(self, index: Tuple[int. int], image_path: str):
+    def set_hover_image(self, index: Tuple[int, int], image_path: str):
         return
     
     def set_selected_image(self, index: Tuple[int, int], image_path: str):
@@ -61,8 +60,8 @@ class VisualGrid:
     
     def set_disable_image(self, index: Tuple[int, int], image_path: str):
         return
-    
-    def set_calllback_function_pressed(self, index: Tuple[int, int], func: function):
+
+    """
+    def set_callback_function_pressed(self, index: Tuple[int, int], func: function):
         return
-    
-    
+    """
