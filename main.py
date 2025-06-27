@@ -42,6 +42,7 @@ clock = pygame.time.Clock()
 running = True
 dt = 0
 timeBetweenMoves = 0.5
+maxResources = 3
 
 battleSession = BattleStats()
 init_data = game_init.setup_battle(8, 12, 3)
@@ -50,6 +51,7 @@ run_counter = 0
 gameStateManager = game_state_manager.GameStateManager()
 uiManager = pygame_gui.UIManager(resolution)
 menu = menu.Menu(uiManager, screen)
+visual_grid = VisualGrid.VisualGrid(uiManager, screen, init_data)
 
 #pre_phase = pre_phase.PrePhase(uiManager, screen, init_data)
 ai_thinking = False
@@ -83,7 +85,7 @@ while running:
             menu.display_menu()
         case game_state_manager.GameState.PRE_PHASE:
             if gameStateManager.GetGenerator() == None:
-                gameStateManager.SetGenerator(pre_phase.run(gameStateManager, init_data, run_counter, VisualGrid.VisualGrid(uiManager, screen, init_data)))
+                gameStateManager.SetGenerator(pre_phase.run(gameStateManager, init_data, run_counter, visual_grid, maxResources))
                 if run_counter:
                     # DISPLAY "WAITING FOR AI"
                     font = pygame.font.Font(None, 32)
@@ -128,7 +130,6 @@ while running:
                 else:
                     # HANDLE UPDATE FOR RENDERING HERE!!!!!
                     print("Action Taken")
-                    visual_grid = VisualGrid.VisualGrid(uiManager, screen, init_data)
 
                     UpdateGrid(result[1], result[2], result[3], visual_grid)
 

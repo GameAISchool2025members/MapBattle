@@ -48,7 +48,7 @@ class VisualGrid:
     def set_image(self, index: Tuple[int, int], image_path: str):
         button = self.map.Cells[index[1]][index[0]]
         button_image = pygame.image.load(image_path)
-        button.set_image(button_image)
+        button.image = button_image
         #self.background.convert_alpha()
         #self.background.blit(button_image, button.relative_rect)
     
