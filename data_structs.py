@@ -28,10 +28,10 @@ class StatRanges:
     def set_map_bounds(self, width: int, height: int, is_agent_a: bool):
         if is_agent_a:
             self.PositionX = (0, width-1)
-            self.PositionY = (0, height//2-1)
+            self.PositionY = (0, 1)
         else:
             self.PositionX = (0, width-1)
-            self.PositionY = (height//2, height-1)
+            self.PositionY = (height-2, height-1)
     def get_mins(self) -> List[int]:
         return [self.Range[0], self.TurnOrderSpeed[0], self.MoveRange[0], self.Damage[0], self.MaxHealth[0], self.PositionX[0], self.PositionY[0]]
     def get_maxs(self) -> List[int]:
