@@ -28,8 +28,9 @@ def Internal_RunEvolution(
         Seed: int
             ) -> Tuple[UnitStat, UnitStat]:
     random.seed(Seed)
-
+    print(f'Evolving units for player A')
     best_unit_a = evolution_loop(UnitsForAgentA, UnitsForAgentB, MapGrid, MaxUnitBudget, NumberOfGenerations, PopulationSize, is_agent_a=True)
+    print(f'Evolving units for player B')
     best_unit_b = evolution_loop(UnitsForAgentA, UnitsForAgentB, MapGrid, MaxUnitBudget, NumberOfGenerations, PopulationSize, is_agent_a=False)
 
     return best_unit_a, best_unit_b
@@ -64,9 +65,9 @@ def evaluate_fitness(genome: List[int], units_for_agent_a: List[UnitStat], units
     results = 0
     unit = UnitStat.from_genome(genome, Owner.AgentA if is_agent_a else Owner.AgentB)
     for _ in range(iterations):
-        new_units_for_agent_a = units_for_agent_a + [unit] if is_agent_a else units_for_agent_a + [UnitStat.from_genome(generate_random_unit(budget, is_agent_a=True), Owner.AgentA)]
+        new_units_for_agent_a = units_for_agent_a + [unit] if is_agent_a else units_for_agent_a + [UnitStat.from_genome(generate_random_unit(budget, is_agent_a=True, map=map_grid), Owner.AgentA)]
         new_units_for_agent_b = units_for_agent_b + [UnitStat.from_genome(generate_random_unit(budget, is_agent_a=False, map=map_grid), Owner.AgentB)] if is_agent_a else units_for_agent_b + [unit]
-        print(f'Running battle simulation...')
+        # print(f'Running battle simulation...')
         result = Battle(new_units_for_agent_a, new_units_for_agent_b, map_grid)
         results += 1 if result.Winner == (Owner.AgentA if is_agent_a else Owner.AgentB) else 0
 
@@ -111,8 +112,13 @@ def generate_offspring(parents: Tuple[List[int], List[int]], budget: int, is_age
         child_genome[mutation_idx] = value_change
         #Reapply somewhere else
         if mutation_idx < len(child_genome) - 2:  
-            reapply_idx = random.randint(0, len(child_genome) - 1)
-            child_genome[reapply_idx] = min(max(statranges.get_mins()[reapply_idx], child_genome[reapply_idx] - mutation_amount), statranges.get_maxs()[reapply_idx])
+            remaining_mutation_amount = value_change - child_genome[mutation_idx]
+            while remaining_mutation_amount != 0:
+                reapply_idx = random.randint(0, len(child_genome) - 1)
+                remaining_mutation_amount = mutation_amount
+                new_value = min(max(statranges.get_mins()[reapply_idx], child_genome[reapply_idx] - remaining_mutation_amount), statranges.get_maxs()[reapply_idx])
+                remaining_budget -= new_value - child_genome[reapply_idx]
+                child_genome[reapply_idx] = new_value
 
         # Ensure stats are within bounds
         child_genome = [min(max(statranges.get_mins()[i], child_genome[i]), statranges.get_maxs()[i]) for i in range(len(child_genome))]
@@ -143,7 +149,7 @@ def evolution_loop(UnitsForAgentA: List[UnitStat], UnitsForAgentB: List[UnitStat
 def repair_positions(new_unit: List[int], existing_units: List[UnitStat], grid: Grid) -> UnitStat:
     existing_positions = [unit.CurrentPosition for unit in existing_units]
     # If the new unit's position is already occupied, find a new position
-    if new_unit[-2] in existing_positions or grid.Cells[new_unit[-2]][new_unit[-1]] != 0:
+    if new_unit[-2] in existing_positions or grid.Cells[new_unit[-1]][new_unit[-2]] != 0:
         # Find a new position in expanding rings around the original position
         x, y = new_unit[-2], new_unit[-1]
         found = False
@@ -153,7 +159,7 @@ def repair_positions(new_unit: List[int], existing_units: List[UnitStat], grid: 
                         for dy in [-r, r]:  # Top and bottom edges of the ring
                                 new_x, new_y = x + dx, y + dy
                                 if (0 <= new_x < grid.Width and 0 <= new_y < grid.Height and 
-                                        grid.Cells[new_x][new_y] == 0 and 
+                                        grid.Cells[new_y][new_x] == 0 and 
                                         (new_x, new_y) not in existing_positions):
                                         new_unit[-2], new_unit[-1] = new_x, new_y
                                         found = True
@@ -165,7 +171,7 @@ def repair_positions(new_unit: List[int], existing_units: List[UnitStat], grid: 
                                 for dy in range(-r+1, r):  # Avoid double-counting corners
                                         new_x, new_y = x + dx, y + dy
                                         if (0 <= new_x < grid.Width and 0 <= new_y < grid.Height and 
-                                                grid.Cells[new_x][new_y] == 0 and 
+                                                grid.Cells[new_y][new_x] == 0 and 
                                                 (new_x, new_y) not in existing_positions):
                                                 new_unit[-2], new_unit[-1] = new_x, new_y
                                                 found = True
@@ -179,7 +185,7 @@ def repair_positions(new_unit: List[int], existing_units: List[UnitStat], grid: 
                 while True:
                         new_x = random.randint(0, grid.Width - 1)
                         new_y = random.randint(0, grid.Height - 1)
-                        if grid.Cells[new_x][new_y] == 0 and (new_x, new_y) not in existing_positions:
+                        if grid.Cells[new_y][new_x] == 0 and (new_x, new_y) not in existing_positions:
                                 new_unit[-2], new_unit[-1] = new_x, new_y
                                 break
 

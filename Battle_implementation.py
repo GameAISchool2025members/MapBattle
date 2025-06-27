@@ -349,7 +349,7 @@ def Internal_Battle(
                         
             MapCopy = Result[1]
             ToReturn.ActionsTaken.append(Result[2])
-            print(Result[2].Type)
+            # print(Result[2].Type)
 
             #print(f"Unit {Unit.UnitID} took the {Result[2].Type} action, targeting position {Result[2].GridIndexPosition}")
             #print()
