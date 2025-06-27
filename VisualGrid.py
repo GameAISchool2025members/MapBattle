@@ -39,7 +39,7 @@ class VisualGrid:
 
                 self.map.Cells[h].append(pygame_gui.elements.UIButton(
                     relative_rect=pygame.Rect((width, height), self.button_dim),
-                    text='Test (' + str(w) + ', ' + str(h) + ')',
+                    text='',
                     manager=manager))
 
     def display_map(self):
