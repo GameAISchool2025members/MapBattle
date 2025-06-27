@@ -22,7 +22,7 @@ timeBetweenMoves = 0.5
 
 battleSession = BattleStats()
 init_data = game_init.setup_battle(8, 12, 3)
-run_counter: int = 0
+run_counter = 0
 
 gameStateManager = game_state_manager.GameStateManager()
 uiManager = pygame_gui.UIManager(resolution)
