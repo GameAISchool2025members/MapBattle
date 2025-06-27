@@ -1,3 +1,5 @@
+import asyncio
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from scipy import stats
 from data_structs import UnitStat, Grid, ResultOfBattle, StatRanges, Owner, generate_random_unit
 from typing import List, Tuple
@@ -5,20 +7,7 @@ from battle import Battle
 import random
 import time
 
-#Dummy Battle Implementation
-# def Battle( 
-#     UnitsForAgentA: List[UnitStat],
-#     UnitsForAgentB: List[UnitStat],
-#     MapGrid: Grid
-#         ) -> ResultOfBattle:
-
-#     return ResultOfBattle(
-#         ActionsTaken=[],
-#         Winner=Owner.AgentA if random.choice([True, False]) else Owner.AgentB
-#     )
-
-
-def Internal_RunEvolution(  
+async def Internal_RunEvolution(  
         UnitsForAgentA: List[UnitStat],
         UnitsForAgentB: List[UnitStat],
         MaxUnitBudget: int,
@@ -28,11 +17,16 @@ def Internal_RunEvolution(
         Seed: int
             ) -> Tuple[UnitStat, UnitStat]:
     random.seed(Seed)
-    print(f'Evolving units for player A')
-    best_unit_a = evolution_loop(UnitsForAgentA, UnitsForAgentB, MapGrid, MaxUnitBudget, NumberOfGenerations, PopulationSize, is_agent_a=True)
-    print(f'Evolving units for player B')
-    best_unit_b = evolution_loop(UnitsForAgentA, UnitsForAgentB, MapGrid, MaxUnitBudget, NumberOfGenerations, PopulationSize, is_agent_a=False)
-
+    
+    # Run evolution for both agents concurrently
+    print(f'Starting concurrent evolution for both players')
+    
+    tasks = [
+        evolution_loop_async(UnitsForAgentA, UnitsForAgentB, MapGrid, MaxUnitBudget, NumberOfGenerations, PopulationSize, is_agent_a=True),
+        evolution_loop_async(UnitsForAgentA, UnitsForAgentB, MapGrid, MaxUnitBudget, NumberOfGenerations, PopulationSize, is_agent_a=False)
+    ]
+    
+    best_unit_a, best_unit_b = await asyncio.gather(*tasks)
     return best_unit_a, best_unit_b
 
 
@@ -48,6 +42,35 @@ def evaluate_fitness(genome: List[int], units_for_agent_a: List[UnitStat], units
         results += 1 if result.Winner == (Owner.AgentA if is_agent_a else Owner.AgentB) else 0
 
     return results / iterations
+
+async def evaluate_fitness_async(genome: List[int], units_for_agent_a: List[UnitStat], units_for_agent_b: List[UnitStat], map_grid: Grid, is_agent_a: bool, budget: int, iterations: int = 10) -> float:
+    """Async version of fitness evaluation with concurrent battle simulations"""
+    unit = UnitStat.from_genome(genome, Owner.AgentA if is_agent_a else Owner.AgentB)
+    
+    # Create tasks for concurrent battle simulations
+    tasks = []
+    for _ in range(iterations):
+        new_units_for_agent_a = units_for_agent_a + [unit] if is_agent_a else units_for_agent_a + [UnitStat.from_genome(generate_random_unit(budget, is_agent_a=True, map=map_grid), Owner.AgentA)]
+        new_units_for_agent_b = units_for_agent_b + [UnitStat.from_genome(generate_random_unit(budget, is_agent_a=False, map=map_grid), Owner.AgentB)] if is_agent_a else units_for_agent_b + [unit]
+        
+        # Run battle in thread pool to avoid blocking
+        task = asyncio.create_task(
+            run_battle_async(new_units_for_agent_a, new_units_for_agent_b, map_grid, is_agent_a)
+        )
+        tasks.append(task)
+    
+    # Wait for all battles to complete
+    results = await asyncio.gather(*tasks)
+    return sum(results) / iterations
+
+async def run_battle_async(units_a: List[UnitStat], units_b: List[UnitStat], map_grid: Grid, is_agent_a: bool) -> int:
+    """Run a single battle simulation asynchronously"""
+    loop = asyncio.get_event_loop()
+    
+    # Run the battle in a thread pool since it's CPU-intensive
+    with ThreadPoolExecutor() as executor:
+        result = await loop.run_in_executor(executor, Battle, units_a, units_b, map_grid)
+        return 1 if result.Winner == (Owner.AgentA if is_agent_a else Owner.AgentB) else 0
 
 def select_parents(population: List[List[int]], fitness_scores: List[float]) -> Tuple[List[int], List[int]]:
     # Select two parents based on their fitness scores
@@ -105,6 +128,69 @@ def generate_offspring(parents: Tuple[List[int], List[int]], budget: int, is_age
         assert all(child_genome[i] >= statranges.get_mins()[i] for i in range(len(child_genome))), "Genome has values below minimum"
         assert all(child_genome[i] <= statranges.get_maxs()[i] for i in range(len(child_genome))), "Genome has values above maximum"
     return offspring
+
+async def evolution_loop_async(UnitsForAgentA: List[UnitStat], UnitsForAgentB: List[UnitStat], MapGrid: Grid, MaxUnitBudget: int, NumberOfGenerations: int, PopulationSize: int, is_agent_a: bool) -> UnitStat:
+    """Async version of evolution loop with concurrent fitness evaluation"""
+    population = [generate_random_unit(MaxUnitBudget, is_agent_a=is_agent_a, map=MapGrid) for _ in range(PopulationSize)]
+
+    for generation in range(NumberOfGenerations):
+        print(f"Generation {generation + 1}/{NumberOfGenerations} - Agent {'A' if is_agent_a else 'B'}")
+        
+        # Evaluate fitness for all units concurrently
+        fitness_tasks = [
+            evaluate_fitness_async(unit, UnitsForAgentA, UnitsForAgentB, MapGrid, is_agent_a, budget=MaxUnitBudget)
+            for unit in population
+        ]
+        fitness_scores = await asyncio.gather(*fitness_tasks)
+        
+        # Generate offspring
+        offspring = []
+        for _ in range(PopulationSize//2):
+            parents = select_parents(population, fitness_scores)
+            children = generate_offspring(parents, MaxUnitBudget, is_agent_a=is_agent_a, map=MapGrid)
+            children = [repair_positions(child, UnitsForAgentA + UnitsForAgentB, MapGrid) for child in children]
+            offspring.extend(children)
+        population = offspring
+
+    # Final fitness evaluation to find the best unit
+    final_fitness_tasks = [
+        evaluate_fitness_async(unit, UnitsForAgentA, UnitsForAgentB, MapGrid, is_agent_a, budget=MaxUnitBudget)
+        for unit in population
+    ]
+    final_fitness_scores = await asyncio.gather(*final_fitness_tasks)
+    
+    best_idx = max(range(len(population)), key=lambda i: final_fitness_scores[i])
+    return UnitStat.from_genome(population[best_idx], Owner.AgentA if is_agent_a else Owner.AgentB)
+
+# For process-based parallelism (alternative approach for CPU-intensive work)
+async def evaluate_fitness_process_pool(genome: List[int], units_for_agent_a: List[UnitStat], units_for_agent_b: List[UnitStat], map_grid: Grid, is_agent_a: bool, budget: int, iterations: int = 10) -> float:
+    """Alternative using process pool for CPU-intensive battle simulations"""
+    loop = asyncio.get_event_loop()
+    
+    # Prepare battle data for process pool
+    battle_data = []
+    unit = UnitStat.from_genome(genome, Owner.AgentA if is_agent_a else Owner.AgentB)
+    
+    for _ in range(iterations):
+        new_units_for_agent_a = units_for_agent_a + [unit] if is_agent_a else units_for_agent_a + [UnitStat.from_genome(generate_random_unit(budget, is_agent_a=True, map=map_grid), Owner.AgentA)]
+        new_units_for_agent_b = units_for_agent_b + [UnitStat.from_genome(generate_random_unit(budget, is_agent_a=False, map=map_grid), Owner.AgentB)] if is_agent_a else units_for_agent_b + [unit]
+        battle_data.append((new_units_for_agent_a, new_units_for_agent_b, map_grid, is_agent_a))
+    
+    # Run battles in process pool
+    with ProcessPoolExecutor() as executor:
+        tasks = [
+            loop.run_in_executor(executor, run_single_battle, data)
+            for data in battle_data
+        ]
+        results = await asyncio.gather(*tasks)
+    
+    return sum(results) / iterations
+
+def run_single_battle(battle_data: Tuple) -> int:
+    """Helper function for process pool execution"""
+    units_a, units_b, map_grid, is_agent_a = battle_data
+    result = Battle(units_a, units_b, map_grid)
+    return 1 if result.Winner == (Owner.AgentA if is_agent_a else Owner.AgentB) else 0
 
 def evolution_loop(UnitsForAgentA: List[UnitStat], UnitsForAgentB: List[UnitStat], MapGrid: Grid, MaxUnitBudget: int, NumberOfGenerations: int, PopulationSize: int, is_agent_a: bool) -> UnitStat:
     population = [generate_random_unit(MaxUnitBudget, is_agent_a=is_agent_a, map=MapGrid) for _ in range(PopulationSize)]
@@ -173,7 +259,7 @@ if __name__ == "__main__":
     units_b = [UnitStat.from_genome([2, 3, 4, 5, 6, 2, 2], Owner.AgentB)]
     grid = Grid(12, 14, [[0]*12 for _ in range(14)])
     
-    best_a, best_b = Internal_RunEvolution(
+    best_a, best_b = asyncio.run(Internal_RunEvolution(
         UnitsForAgentA=units_a,
         UnitsForAgentB=units_b, 
         MaxUnitBudget=20, 
@@ -181,7 +267,9 @@ if __name__ == "__main__":
         NumberOfGenerations=10, 
         PopulationSize=5, 
         Seed=42
-    )
+    ))
+    print('This runs while evolution is running')
+
     #We are setting global seed, which should not be a problem since the battle simulation is deterministic.
     print("Best Unit A:", best_a)
     print("Best Unit B:", best_b)
