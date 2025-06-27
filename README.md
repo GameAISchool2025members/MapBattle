@@ -16,7 +16,8 @@ A PhD student at Malmö, Sweden, researching Automatic Quality Assurance as part
 
 
 ### Liam Snow
-
+Junior Programmer at Straight4 Studios (near Bath, UK)
+[LinkedIn](https://www.linkedin.com/in/liamsnow/)
 
 ### Ruizhe "Jay" Yu Xia
 
