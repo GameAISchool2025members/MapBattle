@@ -14,10 +14,10 @@ from typing import List
 from data_structs import Grid, UnitStat
 
 def UpdateGrid(MapGrid: Grid, AgentAUnits: List[UnitStat], AgentBUnits: List[UnitStat], Visuals: VisualGrid.VisualGrid):
-    image_blank = "./media/BlackAlpha50.png"
-    image_tree = "./media/TreeSprite.png"
-    image_agent_a = "./media/MalmoitAlpha.png"
-    image_agent_b = "./media/SkriemasAlpha.png"
+    image_blank = "./media/BlackAlpha50_64x64.png"
+    image_tree = "./media/TreeSprite_64x64.png"
+    image_agent_a = "./media/MalmoitAlpha_64x64.png"
+    image_agent_b = "./media/SkriemasAlpha_64x64.png"
 
     for x in range(0, MapGrid.Width):
         for y in range(0, MapGrid.Height):
