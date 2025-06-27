@@ -38,17 +38,25 @@ class Menu:
         )
 
     def show_menu(self):
+        self.background = pygame.Surface(self.screen.get_size())
+        self.background = self.background.convert()
+        self.background.fill((170, 238, 187))  # Green
+        self.button_dim = pygame.Vector2(100, 50)
+        self.display_title_text()
         if not hasattr(self, 'play_button') or not self.play_button.alive():
             self.create_buttons()
 
     def hide_menu(self):
+        self.background = pygame.Surface(self.screen.get_size())
+        self.background = self.background.convert()
+        self.background.fill((170, 238, 187))  # Green
+        self.button_dim = pygame.Vector2(100, 50)
         if hasattr(self, 'play_button') and self.play_button.alive():
             self.play_button.kill()
         if hasattr(self, 'quit_button') and self.quit_button.alive():
             self.quit_button.kill()
 
     def display_menu(self):
-        self.display_title_text()
         self.screen.blit(self.background, (0, 0))
 
     def display_title_text(self):
