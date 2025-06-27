@@ -34,12 +34,14 @@ def Internal_RunEvolution(
 
     return best_unit_a, best_unit_b
 
-def generate_random_unit(budget: int, is_agent_a: bool) -> List[int]:
+def generate_random_unit(budget: int, is_agent_a: bool, map: Grid) -> List[int]:
     # Split budget randomly
     # TODO: Not sure if this is truly uniform
-    ranges = StatRanges().get_ranges()
+    statranges = StatRanges()
+    statranges.set_map_bounds(map.Width, map.Height, is_agent_a)
+    ranges = statranges.get_ranges()
     genome = [min_val for (min_val, max_val) in ranges]
-    remaining_budget = budget - sum(genome)
+    remaining_budget = budget - sum(genome[:-2])
     #Randomly distribute budget (budget does not apply to position)
     for i, r in enumerate(ranges[:-2]):
         min_val, max_val = r
@@ -48,13 +50,13 @@ def generate_random_unit(budget: int, is_agent_a: bool) -> List[int]:
             value_change = min(allocated, remaining_budget)
             genome[i] += value_change
             remaining_budget -= value_change
-    genome[-2] = random.randint(0, StatRanges().get_maxs()[-2])  # Random X position
-    genome[-1] = random.randint(0, StatRanges().get_maxs()[-1])  # Random Y position
+    genome[-2] = random.randint(statranges.get_mins()[-2], statranges.get_maxs()[-2])  # Random X position
+    genome[-1] = random.randint(statranges.get_mins()[-1], statranges.get_maxs()[-1])  # Random Y position
 
     # Ensure the genome does not exceed the budget
     assert sum(genome[:-2]) <= budget, "Genome exceeds budget"
-    assert all(genome[i] >= StatRanges().get_mins()[i] for i in range(len(genome))), "Genome has values below minimum"
-    assert all(genome[i] <= StatRanges().get_maxs()[i] for i in range(len(genome))), "Genome has values above maximum"
+    assert all(genome[i] >= statranges.get_mins()[i] for i in range(len(genome))), "Genome has values below minimum"
+    assert all(genome[i] <= statranges.get_maxs()[i] for i in range(len(genome))), "Genome has values above maximum"
     return genome
 
 
@@ -63,7 +65,8 @@ def evaluate_fitness(genome: List[int], units_for_agent_a: List[UnitStat], units
     unit = UnitStat.from_genome(genome, Owner.AgentA if is_agent_a else Owner.AgentB)
     for _ in range(iterations):
         new_units_for_agent_a = units_for_agent_a + [unit] if is_agent_a else units_for_agent_a + [UnitStat.from_genome(generate_random_unit(budget, is_agent_a=True), Owner.AgentA)]
-        new_units_for_agent_b = units_for_agent_b + [UnitStat.from_genome(generate_random_unit(budget, is_agent_a=False), Owner.AgentB)] if is_agent_a else units_for_agent_b + [unit]
+        new_units_for_agent_b = units_for_agent_b + [UnitStat.from_genome(generate_random_unit(budget, is_agent_a=False, map=map_grid), Owner.AgentB)] if is_agent_a else units_for_agent_b + [unit]
+        print(f'Running battle simulation...')
         result = Battle(new_units_for_agent_a, new_units_for_agent_b, map_grid)
         results += 1 if result.Winner == (Owner.AgentA if is_agent_a else Owner.AgentB) else 0
 
@@ -72,14 +75,20 @@ def evaluate_fitness(genome: List[int], units_for_agent_a: List[UnitStat], units
 def select_parents(population: List[List[int]], fitness_scores: List[float]) -> Tuple[List[int], List[int]]:
     # Select two parents based on their fitness scores
     total_fitness = sum(fitness_scores)
+    if total_fitness == 0:
+        # If all fitness scores are zero, select randomly
+        return random.sample(population, 2)
     selection_probs = [score / total_fitness for score in fitness_scores]
     parents = random.choices(population, weights=selection_probs, k=2)
     return parents[0], parents[1]
 
-def generate_offspring(parents: Tuple[List[int], List[int]], budget: int, is_agent_a: bool) -> List[List[int]]:
+def generate_offspring(parents: Tuple[List[int], List[int]], budget: int, is_agent_a: bool, map: Grid) -> List[List[int]]:
     parent1, parent2 = parents
+    statranges = StatRanges()
+    statranges.set_map_bounds(map.Width, map.Height, is_agent_a)
     # Crossover and mutation logic to create offspring
     offspring = []
+
     for _ in range(2):  # Generate two offspring
         # Create a genome by averaging parent values
         child_genome = [(p1 + p2) // 2 for p1, p2 in zip(parent1, parent2)]
@@ -90,7 +99,7 @@ def generate_offspring(parents: Tuple[List[int], List[int]], budget: int, is_age
         # Randomly adjust the genome within the budget
         while remaining_budget > 0:
             selected_idx = random.randint(0, len(child_genome) - 1)
-            new_value = min(child_genome[selected_idx] + 1, StatRanges().get_maxs()[selected_idx])
+            new_value = min(child_genome[selected_idx] + 1, statranges.get_maxs()[-2])
             if new_value != child_genome[selected_idx]:
                 remaining_budget -= 1
                 child_genome[selected_idx] = new_value
@@ -98,32 +107,35 @@ def generate_offspring(parents: Tuple[List[int], List[int]], budget: int, is_age
         # Apply mutation
         mutation_idx = random.randint(0, len(child_genome) - 1)
         mutation_amount = random.randint(-2, 2)
-        value_change = min(max(StatRanges().get_mins()[mutation_idx], child_genome[mutation_idx] + mutation_amount), StatRanges().get_maxs()[mutation_idx])
+        value_change = min(max(statranges.get_mins()[mutation_idx], child_genome[mutation_idx] + mutation_amount), statranges.get_maxs()[mutation_idx])
         child_genome[mutation_idx] = value_change
         #Reapply somewhere else
         if mutation_idx < len(child_genome) - 2:  
             reapply_idx = random.randint(0, len(child_genome) - 1)
-            child_genome[reapply_idx] = min(max(StatRanges().get_mins()[reapply_idx], child_genome[reapply_idx] - mutation_amount), StatRanges().get_maxs()[reapply_idx])
+            child_genome[reapply_idx] = min(max(statranges.get_mins()[reapply_idx], child_genome[reapply_idx] - mutation_amount), statranges.get_maxs()[reapply_idx])
 
         # Ensure stats are within bounds
-        child_genome = [min(max(StatRanges().get_mins()[i], child_genome[i]), StatRanges().get_maxs()[i]) for i in range(len(child_genome))]
+        child_genome = [min(max(statranges.get_mins()[i], child_genome[i]), statranges.get_maxs()[i]) for i in range(len(child_genome))]
         offspring.append(child_genome)
         
         # Ensure the genome does not exceed the budget
         assert sum(child_genome[:-2]) <= budget, "Genome exceeds budget"
-        assert all(child_genome[i] >= StatRanges().get_mins()[i] for i in range(len(child_genome))), "Genome has values below minimum"
-        assert all(child_genome[i] <= StatRanges().get_maxs()[i] for i in range(len(child_genome))), "Genome has values above maximum"
+        assert all(child_genome[i] >= statranges.get_mins()[i] for i in range(len(child_genome))), "Genome has values below minimum"
+        assert all(child_genome[i] <= statranges.get_maxs()[i] for i in range(len(child_genome))), "Genome has values above maximum"
     return offspring
 
 def evolution_loop(UnitsForAgentA: List[UnitStat], UnitsForAgentB: List[UnitStat], MapGrid: Grid, MaxUnitBudget: int, NumberOfGenerations: int, PopulationSize: int, is_agent_a: bool) -> UnitStat:
-    population = [generate_random_unit(MaxUnitBudget, is_agent_a=is_agent_a) for _ in range(PopulationSize)]
+    population = [generate_random_unit(MaxUnitBudget, is_agent_a=is_agent_a, map=MapGrid) for _ in range(PopulationSize)]
 
     for generation in range(NumberOfGenerations):
+        print(f"Generation {generation + 1}/{NumberOfGenerations}")
         fitness_scores = [evaluate_fitness(unit, UnitsForAgentA, UnitsForAgentB, MapGrid, is_agent_a, budget=MaxUnitBudget) for unit in population]
         offspring = []
         for _ in range(PopulationSize//2):
             parents = select_parents(population, fitness_scores)
-            offspring.extend(generate_offspring(parents, MaxUnitBudget, is_agent_a=is_agent_a))
+            children = generate_offspring(parents, MaxUnitBudget, is_agent_a=is_agent_a, map=MapGrid)
+            children = [repair_positions(child, UnitsForAgentA + UnitsForAgentB, MapGrid) for child in children]
+            offspring.extend(children)
         population = offspring
 
     return max(population, key=lambda unit: evaluate_fitness(unit, UnitsForAgentA, UnitsForAgentB, MapGrid, is_agent_a, budget=MaxUnitBudget))
@@ -179,7 +191,15 @@ if __name__ == "__main__":
     units_b = [UnitStat.from_genome([2, 3, 4, 5, 6, 2, 2], Owner.AgentB)]
     grid = Grid(12, 14, [[0]*12 for _ in range(14)])
     
-    best_a, best_b = Internal_RunEvolution(units_a, units_b, 20, grid, 10, 5, Seed=42)
+    best_a, best_b = Internal_RunEvolution(
+        UnitsForAgentA=units_a,
+        UnitsForAgentB=units_b, 
+        MaxUnitBudget=20, 
+        MapGrid=grid, 
+        NumberOfGenerations=10, 
+        PopulationSize=5, 
+        Seed=42
+    )
     #We are setting global seed, which should not be a problem since the battle simulation is deterministic.
     print("Best Unit A:", best_a)
     print("Best Unit B:", best_b)

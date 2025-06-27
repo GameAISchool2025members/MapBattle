@@ -48,8 +48,7 @@ def ApplyMoveAction(
     #print(UnitTakingAction.UnitID)
     NewPos = ActionToReturn.GridIndexPosition
     OldPos = UnitTakingAction.CurrentPosition
-    if NewPos == [0, 1]:
-        a = 5
+
     if NewPos == OldPos:
         return tuple([EnemyUnits, MapGridCopy, ActionToReturn])
 
@@ -343,6 +342,7 @@ def Internal_Battle(
                         
             MapCopy = Result[1]
             ToReturn.ActionsTaken.append(Result[2])
+            print(Result[2].Type)
 
             #print(f"Unit {Unit.UnitID} took the {Result[2].Type} action, targeting position {Result[2].GridIndexPosition}")
             #print()
