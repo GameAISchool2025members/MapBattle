@@ -20,7 +20,7 @@ Junior Programmer at Straight4 Studios (near Bath, UK)
 [LinkedIn](https://www.linkedin.com/in/liamsnow/)
 
 ### Ruizhe "Jay" Yu Xia
-
+PhD Student at the Game AI Group in Queen Mary University of London
 
 ## What is MapBattle?
 MapBattle is an auto battler with a twist; you do not control what units that are placed or how they are placed. Instead, you control the map, adapting to the strategy of the team you are assigned to help. However, the teams are also adapting, with new units created through evolutionary algorithms after each turn. 
